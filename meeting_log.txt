@@ -1,0 +1,18 @@
+Meeting 0: April 30, 2025: Mr. Mykolyk Period 5
+Mr. Mykolyk tells us our code should be nearing production level. We need to test well, write in standardized python, and comment code.
+
+Meeting 1: April 30, 2025: Mr. Dillon Period 5
+Mr. Dillon tells us more details about the scheduling algorithm and gives us our first task:
+ - An algorithm that takes a student request and class list and returns if the schedule is impossible.
+ - we should look into google apps script, but it is not mandatory.
+ - the main issue with the current scheduling software is the elective list not going into the main recursive function?
+
+Meeting 2: May 1, 2025: Mr. Dillon Period 4
+Jady meets with Mr. Dillon to tell him that the first task has been completed. Next task should be to actually generate schedules.
+short meeting
+
+Meeting 3: May 1, 2025: Mr. Mykolyk Period 5
+Mr. Mykolyk tells us to ask for more information about Google Apps Script. We should anticipate project scope increases.
+
+Meeting 4: May 1 30, 2025: Mr. Dillon Period 9
+[future]
