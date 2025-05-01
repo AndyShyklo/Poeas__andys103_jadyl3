@@ -63,7 +63,7 @@ def checkScheduleR(availability, current_class, schedule_so_far, working):
 # test recursion function
 # print(checkSchedule([[1], [1]]))
 
-# prints 
+# prints
 def findImpossibleSchedules():
     for student in student_requests:
         availability = returnListofAvailability(student, class_list)
@@ -89,14 +89,10 @@ def findPossibleSchedule(student_id):
             classes = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '10': "None"}
             availability = returnListofAvailabilityDict(student, class_list)
             for key, item in availability.items():
-                if len(item) == 1 and classes[item[0]] == "None":
-                    classes[item[0]] = key
-                else:
-                    for pd in item:
-                        if classes[pd] == "None":
-                            classes[pd] = key
-                            break
+                for pd in item:
+                    if classes[pd] == "None":
+                        classes[pd] = key
+                        break
             return(classes)
-        
+
 print(findPossibleSchedule('100635729'))
-                
