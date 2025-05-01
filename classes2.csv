@@ -1,0 +1,4 @@
+SchoolDBN,SchoolYear,TermID,CourseCode,SectionID,Course name,PeriodID,Cycle Day,Capacity,Remaining Capacity,Gender,Teacher Name,Room,Mapped Course,Mapped Section,ErrDescription,Bell Schedule Name
+02M475,2024-2025,2,MCS22X,1,AP CALC AB 2 OF 2,1,11111,33,0,0,TEACHER A,ROOM1,,,,A
+02M475,2024-2025,2,MCS44X,1,AP CALC BC 2 OF 2,1,11111,34,0,0,TEACHER B,ROOM2,,,,A
+02M475,2024-2025,2,MCS44X,1,AP CALC BC 2 OF 2,2,10101,34,0,0,TEACHER B,ROOM2,,,,A
