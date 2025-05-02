@@ -95,12 +95,20 @@ def findPossibleSchedule(student_id):
     for student in student_requests:
         if student_id == student['StudentID']:
             classes = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '10': "None"}
-            availability = returnListofAvailabilityDict(student, class_list)
-            for key, item in availability.items():
-                for pd in item:
+            avail_dict = returnListofAvailabilityDict(student, class_list)
+            print(avail_dict)
+            availability = sorted(avail_dict, key=lambda k: len(avail_dict[k]), reverse = False)
+            print(availability)
+            for item in availability:
+                # print(item)
+                for pd in avail_dict[item]:
+                    # print(pd, classes[pd])
                     if classes[pd] == "None":
-                        classes[pd] = key
+                        classes[pd] = item
+                        # print(pd, classes[pd])
                         break
+                    if (pd == avail_dict[-1]):
+                        return ("Error, cannot be scheduled. Current Schedule", classes, "   Current class and period:", item, pd, "   Current pd list: ", avail_dict[item])
             return(classes)
-
-# print(findPossibleSchedule('100635729'))
+#error so far
+#print("Class schedule: ", findPossibleSchedule('100635729'))
