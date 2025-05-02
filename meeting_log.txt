@@ -1,31 +1,30 @@
-Meeting 0: April 30, 2025: Mr. Mykolyk Period 5
+Meeting 0: April 30, 2025: Mr. Mykolyk Period 5, Andy, Jady
 Mr. Mykolyk tells us our code should be nearing production level. We need to test well, write in standardized python, and comment code.
 
-Meeting 1: April 30, 2025: Mr. Dillon Period 5
+Meeting 1: April 30, 2025: Mr. Dillon Period 5, Andy, Jady
 Mr. Dillon tells us more details about the scheduling algorithm and gives us our first task:
  - An algorithm that takes a student request and class list and returns if the schedule is impossible.
  - we should look into google apps script, but it is not mandatory.
  - the main issue with the current scheduling software is the elective list not going into the main recursive function?
 
-Meeting 2: May 1, 2025: Mr. Dillon Period 4
+Meeting 2: May 1, 2025: Mr. Dillon Period 4, Jady
 Jady meets with Mr. Dillon to tell him that the first task has been completed. Next task should be to actually generate schedules.
 short meeting
 
-Meeting 3: May 1, 2025: Mr. Mykolyk Period 5
+Meeting 3: May 1, 2025: Mr. Mykolyk Period 5, Andy, Jady
 Mr. Mykolyk tells us to ask for more information about Google Apps Script. We should anticipate project scope increases.
 
-Meeting 4: May 1, 2025: Mr. Dillon Period 8
+Meeting 4: May 1, 2025: Mr. Dillon Period 8, Andy
   - Try to assign more selective classes first, then rearrange easier classes
   - Possibly assign difficulty to each class (maybe period) to sort by difficulty to get into class. Currently how talos has it
   - Requirements should be prioritized, some requests have to be fulfilled --> creates impossible requests
   - Allow for more difficult schedules to be filtered earlier
-  - Schedule by capacity, then by electives 
+  - Schedule by capacity, then by electives
   - Sample student requests:
     - [OSIS, ENGLISH1, MATH1, SCIENCE1, TECH1] -- each is a requested class. Could separate list to have a place for required vs electives
     - [OSIS, [ENGLISH1, ENGLISH2, ENGLISH7, ENGLISH12], MATH1, SCIENCE1, TECH1] -- required classes, but English has a choice, allows for easier scheduling. Order is personal student ranking
   - Github collaborator added
 
-Meeting 5: May 1 30, 2025: Mr. Dillon Period 9
+Meeting 5: May 1, 2025: Mr. Dillon Period 9, Jady
 Mr Dillon explained to me how doubles work. It is a headache, and we do need to figure it out.
 There are multiple algorithms we should probably at least mimic. This means we likely will not even touch GAS.
-

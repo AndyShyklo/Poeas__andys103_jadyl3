@@ -56,20 +56,31 @@ def checkSchedule(availability):
 
 #recursively check available periods
 def checkScheduleR(availability, current_class, schedule_so_far, working):
-    if (current_class > 1) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1):
+    if (current_class > 1) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"):
         return False
     if current_class >= len(availability):
         # print(schedule_so_far)
         student_schedules.append({availability[0]: schedule_so_far})
         return True
+    if len(availability[current_class]) == 0:
+        return checkScheduleR(availability, current_class+1, schedule_so_far+"-", False)
     for i in range(len(availability[current_class])):
         pd = availability[current_class][i]
         working = working or checkScheduleR(availability, current_class+1, schedule_so_far+str(pd), False)
     return working
 
 # test recursion function
-print(checkSchedule(["100645728", [1, 2], [1]]))
+print(checkSchedule(["100645728", [1, 2], [1], [], []]))
 print(student_schedules)
+
+def translateSchedule(schedule, student_req):
+    sched = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '0': "None"}
+    for i in range(len(schedule)):
+        if schedule[i] != "-":
+            sched[schedule[i]] = student_req["Course"+str(i+1)]
+    return sched
+
+print(translateSchedule(student_schedules[0]["100645728"], {'Course1': "geometry", 'Course2': "algebra 2", 'Course3': "precalc", 'Course4': "calc ab"}))
 
 # prints
 def findImpossibleSchedules():
@@ -87,7 +98,10 @@ def findImpossibleSchedulesStudent(student_id):
             availability = returnListofAvailabilityDict(student, class_list)
             print(availability)
             # checkSchedule(availability)
-
+{'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '10': "None"}
+for i in range(len(schedule)):
+    if schedule[i] != "-":
+        sched[schedule[i]]
 # findImpossibleSchedulesStudent('100635729')
 
 # finds a potential schedule using existing period availability. framework for future algorithm
