@@ -1,7 +1,7 @@
 jadyL & andyS -- 2025-04-30 11:30
   - Chat with Mr. Dillon about scheduling algorithm:
     - Make algorithm to schedule students first
-    - Add seating for course limitations 
+    - Add seating for course limitations
     - Row of Student CSV data contains OSIS and course reqs
     - Row of Classes CSV data contains Course Code, Section #, Period, Seats, Room, Days
     - Elective rankings to be taken into account later
@@ -23,3 +23,9 @@ andyS -- 2025-05-01 1:34
 jadyL -- 2025-05-01 23:33
   - Remade possible schedule algorithm and allows classes to be shifted upwards
   - Made code work for double period compatability (10 --> 0)
+
+jadyL -- 2025-05-01 11:40
+  - add potential for partial schedules.
+
+jadyL -- 2025-05-01 11:47
+  - trying to translate string schedule
