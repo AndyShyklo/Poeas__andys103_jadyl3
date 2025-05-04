@@ -20,10 +20,10 @@ with open(CLASSES_FILE, newline='') as csvfile:
         class_list.append(row)
 
 # goes through the request and adds the possible periods for the class in course info
-# class periods are shifted up to accomodate the studentid taking the first spot
+# returns a dictionary where student id is the key, and the list of lists is the value
 # change period 10 to 0.
 def returnListofAvailability(student_request, course_info):
-    availability = [student_request["StudentID"]]
+    availability = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         availablePds = []
@@ -36,6 +36,7 @@ def returnListofAvailability(student_request, course_info):
                         availablePds.append(course["PeriodID"])
         availability.append(availablePds)
     return availability
+
 
 # goes through the request and adds the possible periods for the class in course info (dictionary)
 def returnListofAvailabilityDict(student_request, course_info):
@@ -51,27 +52,27 @@ def returnListofAvailabilityDict(student_request, course_info):
     return availability
 
 #wrapper function, starts at 1 as list starts with student id
-def checkSchedule(availability):
-    return checkScheduleR(availability, 1, "", False)
+def checkSchedule(studentid, availability):
+    return checkScheduleR(studentid, availability, 0, "", False)
 
 #recursively check available periods
-def checkScheduleR(availability, current_class, schedule_so_far, working):
-    if (current_class > 1) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"):
+def checkScheduleR(studentid, availability, current_class, schedule_so_far, working):
+    if (current_class > 0) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"):
         return False
     if current_class >= len(availability):
         # print(schedule_so_far)
-        student_schedules.append({availability[0]: schedule_so_far})
+        student_schedules[studentid] =  schedule_so_far
         return True
     if len(availability[current_class]) == 0:
-        return checkScheduleR(availability, current_class+1, schedule_so_far+"-", False)
+        return checkScheduleR(studentid, availability, current_class+1, schedule_so_far+"-", False)
     for i in range(len(availability[current_class])):
         pd = availability[current_class][i]
-        working = working or checkScheduleR(availability, current_class+1, schedule_so_far+str(pd), False)
+        working = working or checkScheduleR(studentid, availability, current_class+1, schedule_so_far+str(pd), False)
     return working
 
 # test recursion function
-print(checkSchedule(["100645728", [1, 2], [1], [], []]))
-print(student_schedules)
+# print(checkSchedule(["100645728", [1, 2], [1], [], []]))
+# print(student_schedules)
 
 def translateSchedule(schedule, student_req):
     sched = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '0': "None"}
@@ -80,16 +81,19 @@ def translateSchedule(schedule, student_req):
             sched[schedule[i]] = student_req["Course"+str(i+1)]
     return sched
 
-print(translateSchedule(student_schedules[0]["100645728"], {'Course1': "geometry", 'Course2': "algebra 2", 'Course3': "precalc", 'Course4': "calc ab"}))
+# print(translateSchedule(student_schedules[0]["100645728"], {'Course1': "geometry", 'Course2': "algebra 2", 'Course3': "precalc", 'Course4': "calc ab"}))
 
 # prints
-def findImpossibleSchedules():
+def createSchedules():
     for student in student_requests:
+        osis = student['StudentID']
         availability = returnListofAvailability(student, class_list)
-        print(availability)
-        # checkSchedule(availability)
+        if (checkSchedule(osis, availability)):
+            print(translateSchedule(student_schedules[osis], student))
+        else:
+            print("no schedule for " + osis)
 
-# findImpossibleSchedules()
+createSchedules()
 
 # finds list of all classes and periods
 def findImpossibleSchedulesStudent(student_id):
@@ -98,10 +102,7 @@ def findImpossibleSchedulesStudent(student_id):
             availability = returnListofAvailabilityDict(student, class_list)
             print(availability)
             # checkSchedule(availability)
-{'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '10': "None"}
-for i in range(len(schedule)):
-    if schedule[i] != "-":
-        sched[schedule[i]]
+
 # findImpossibleSchedulesStudent('100635729')
 
 # finds a potential schedule using existing period availability. framework for future algorithm

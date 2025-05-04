@@ -29,3 +29,9 @@ jadyL -- 2025-05-01 11:40
 
 jadyL -- 2025-05-01 11:47
   - trying to translate string schedule
+
+jadyL -- 2025-05-04 15:22
+  - the ghost of a better programmer possessed me in a Tour les Jours and I made my code better.
+  - I got rid of the id put into the availability list
+  - I added the student id to the recursion functions.
+  - task 2 should be done
