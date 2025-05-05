@@ -30,8 +30,18 @@ jadyL -- 2025-05-01 11:40
 jadyL -- 2025-05-01 11:47
   - trying to translate string schedule
 
+andyS -- 2025-05-01 11:48
+  - fixed schedule proto-type, backup scheduler
+
 jadyL -- 2025-05-04 15:22
   - the ghost of a better programmer possessed me in a Tour les Jours and I made my code better.
   - I got rid of the id put into the availability list
   - I added the student id to the recursion functions.
   - task 2 should be done
+
+andyS -- 2025-05-05 1:34
+  - fixed recursive function to return where a schedule conflict occured, and the status of the schedule
+  - made function to put the schedule together in an accessable format
+  - made 1D array of string with each student-class per row, if scheduled
+  - made 2D array of schedules per student schedule, if scheduled or if not
+  - allowed methods for specific users, not just general (overall, fixed formatting and added info statements)
