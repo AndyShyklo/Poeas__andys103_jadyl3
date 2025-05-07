@@ -28,13 +28,13 @@ Ensure that **Git** is installed on your machine. For help, refer to the followi
 HTTPS METHOD:
 
 ```
-git clone https://github.com/  
+git clone https://github.com/AndyShyklo/Poeas__andys103_jadyl3.git
 ```
 
 SSH METHOD (requires an SSH key):
 
 ```
-git clone git@github.com:
+git clone git@github.com:AndyShyklo/Poeas__andys103_jadyl3.git
 ```
 
 ## Launch Codes
@@ -63,7 +63,7 @@ python3 -m venv PATH/TO/venv_name
 3. Navigate to project directory
 
 ```
-cd PATH/TO/
+cd PATH/TO/Poeas__andys103_jadyl3
 ```
 4. Install dependencies (currently none)
 
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 5. Navigate to project app directory
 
 ```
- cd PATH/TO/
+ cd PATH/TO/Poeas__andys103_jadyl3/app
 ```
 
 6. Run App
