@@ -37,6 +37,12 @@ def returnListofAvailability(student_request, course_info):
         availability.append(availablePds)
     return availability
 
+def availabilitySorter(availability):
+    avail_temp = []
+    for item in availability:
+        return("hi")
+    return(avail_temp)
+
 
 # goes through the request and adds the possible periods for the class in course info (dictionary)
 def returnListofAvailabilityDict(student_request, course_info):
@@ -58,26 +64,27 @@ def checkSchedule(studentid, availability):
 #recursively check available periods, and returns if successful, the furthest it got into the schedule, and the class it failed to add
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
-
-    if (current_class > 0) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"):
+    print(availability)
+    print(type(availability))
+    if (current_class > 0) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"): # if period is double booked
         return [False, max_sched, failed_classes]
-    if current_class >= len(availability):
+    if current_class >= len(availability): # end of recursive cycle, passes scheduling
         # print(schedule_so_far)
         student_schedules[studentid] =  schedule_so_far
         return [True, max_sched, failed_classes]
-    if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0])):
+    if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0])): # checks for max schedule reached, for first iteration
         max_sched.clear()
         failed_classes.clear()
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
-    elif (len(schedule_so_far) == len(max_sched[0])):
+    elif (len(schedule_so_far) == len(max_sched[0])): # checks for max schedule reached, for all other iterations
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
-    if len(availability[current_class]) == 0:
+    if len(availability[current_class]) == 0: # if no section is available
         return checkScheduleR(studentid, availability, current_class+1, schedule_so_far+"-", False, max_sched, failed_classes)
-    for i in range(len(availability[current_class])):
+    for i in range(len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
         result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far+str(pd), False, max_sched, failed_classes)
         if result[0]:
