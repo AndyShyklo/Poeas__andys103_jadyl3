@@ -1,7 +1,9 @@
 import csv
 import math
 
-STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
+STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv" # StudentRequest-Sample2.csv
+# 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
+# 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 9
 student_requests = []
@@ -32,17 +34,32 @@ def returnListofAvailability(student_request, course_info):
             if course["CourseCode"] == classcode:
                 if int(course["Remaining Capacity"]) > 0:
                     if int(course["PeriodID"]) == 10:
-                        availablePds.append(0)
+                        availablePds.append('0')
                     else:
                         availablePds.append(course["PeriodID"])
         availability.append(availablePds)
     return availability
 
+def selectionSorter(availability):
+    avail_temp = []
+    count = 0
+    for item in availability:
+        if count < len(item):
+            count = len(item)
+    for i in range(0, count):
+        for item in availability:
+            if i == len(item):
+                avail_temp.append(item)
+    return(avail_temp)
+
+# for student in student_requests:
+#     if student["StudentID"] == "1":
+#         availability = returnListofAvailability(student, class_list)
+#         print(availability)
+#         print(selectionSorter(availability))
+
 def availabilitySorter(availability):
     avail_temp = []
-    for item in availability:
-        return("hi")
-    return(avail_temp)
 
 
 # goes through the request and adds the possible periods for the class in course info (dictionary)
@@ -60,17 +77,15 @@ def returnListofAvailabilityDict(student_request, course_info):
 
 #wrapper function, starts at 1 as list starts with student id
 def checkSchedule(studentid, availability):
-    return checkScheduleR(studentid, availability, 0, "", False, [], [])
+    return checkScheduleR(studentid, availability, 0, [], False, [], [])
 
 #recursively check available periods, and returns if successful, the furthest it got into the schedule, and the class it failed to add
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
-    print(availability)
-    print(type(availability))
     if ((current_class > 0) # avoids empty list
         and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
-        and (schedule_so_far.index(math.floor(schedule_so_far[-1])) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
-        and (schedule_so_far[-1] != "-")): # for partial schedules 
+        and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1)
+        and (schedule_so_far[-1] != "-")): # for partial schedules ): # checks for a half period placed on a full period
         return [False, max_sched, failed_classes]
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         # print(schedule_so_far)
@@ -87,12 +102,17 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
     if len(availability[current_class]) == 0: # if no section is available
-        return checkScheduleR(studentid, availability, current_class+1, schedule_so_far.append("-"), False, max_sched, failed_classes)
+        schedule_so_far.append("-")
+        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
+        schedule_so_far.pop()
+        return(result)
     for i in range(len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
-        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far.append(pd), False, max_sched, failed_classes)
+        schedule_so_far.append(pd)
+        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
         if result[0]:
             return result
+        schedule_so_far.pop()
     return [False, max_sched, failed_classes]
 
 # test recursion function
@@ -101,6 +121,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
 # translates the schedule into a readable
 def translateSchedule(schedule, student_req):
     sched = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '0': "None"}
+    print(student_req["StudentID"])
     for i in range(len(schedule)):
         if schedule[i] != "-":
             sched[schedule[i]] = student_req["Course"+str(i+1)]

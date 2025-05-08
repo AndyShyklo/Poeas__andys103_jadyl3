@@ -51,6 +51,13 @@ jadyL -- 2025-05-07 23:59
   - added math module
   - added master schedule and student request
 
+andyS -- 2025-05-08 5:17
+  - made selection sorter (provisions for seating)
+  - polished up schedule lister
+  - fixed major errors in both recursive sequencing and master student requests (527 and 799)
+  - design doc changes:
+    - removed extra database organization and added math module
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
