@@ -5,7 +5,7 @@ STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv" # StudentRequest-Sample2.csv
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
-NUM_OF_REQUESTED_CLASSES = 9
+NUM_OF_REQUESTED_CLASSES = 15
 student_requests = []
 student_schedules = {}
 class_list = []
@@ -30,13 +30,14 @@ def returnListofAvailability(student_request, course_info):
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         availablePds = []
-        for course in course_info:
-            if course["CourseCode"] == classcode:
-                if int(course["Remaining Capacity"]) > 0:
-                    if int(course["PeriodID"]) == 10:
-                        availablePds.append('0')
-                    else:
-                        availablePds.append(course["PeriodID"])
+        if classcode:
+            for course in course_info:
+                if course["CourseCode"] == classcode:
+                    if int(course["Remaining Capacity"]) > 0:
+                        if int(course["PeriodID"]) == 10:
+                            availablePds.append('0')
+                        else:
+                            availablePds.append(course["PeriodID"])
         availability.append(availablePds)
     return availability
 
@@ -52,28 +53,8 @@ def selectionSorter(availability):
                 avail_temp.append(item)
     return(avail_temp)
 
-# for student in student_requests:
-#     if student["StudentID"] == "1":
-#         availability = returnListofAvailability(student, class_list)
-#         print(availability)
-#         print(selectionSorter(availability))
-
 def availabilitySorter(availability):
     avail_temp = []
-
-
-# goes through the request and adds the possible periods for the class in course info (dictionary)
-def returnListofAvailabilityDict(student_request, course_info):
-    availability = {}
-    for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
-        classcode = student_request["Course"+str(i)]
-        availablePds = []
-        for course in course_info:
-            if course["CourseCode"] == classcode:
-                if int(course["Remaining Capacity"]) > 0:
-                    availablePds.append(course["PeriodID"])
-        availability[student_request["Course"+str(i)]] = (availablePds)
-    return availability
 
 #wrapper function, starts at 1 as list starts with student id
 def checkSchedule(studentid, availability):
@@ -240,36 +221,3 @@ def formatListTotalClass():
 
 print("\n", "Task 1:", formatListTotalClass(), "\n")
 print("\n", "Task 2:", formatListTotal(), "\n")
-
-# finds list of all classes and periods
-def findImpossibleSchedulesStudent(student_id):
-    for student in student_requests:
-        if student_id == student['StudentID']:
-            availability = returnListofAvailabilityDict(student, class_list)
-            print(availability)
-            # checkSchedule(availability)
-
-# findImpossibleSchedulesStudent('100635729')
-
-# finds a potential schedule using existing period availability. framework for future algorithm, NOT IN USE
-def findPossibleSchedule(student_id):
-    for student in student_requests:
-        if student_id == student['StudentID']:
-            classes = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '10': "None"}
-            avail_dict = returnListofAvailabilityDict(student, class_list)
-            print(avail_dict)
-            availability = sorted(avail_dict, key=lambda k: len(avail_dict[k]), reverse = False)
-            print(availability)
-            for item in availability:
-                # print(item)
-                for pd in avail_dict[item]:
-                    # print(pd, classes[pd])
-                    if classes[pd] == "None":
-                        classes[pd] = item
-                        # print(pd, classes[pd])
-                        break
-                    if (pd == availability[-1]):
-                        return ("Error, cannot be scheduled. Current Schedule", classes, "   Current class and period:", item, pd, "   Current pd list: ", avail_dict[item])
-            return(classes)
-
-# print("Class schedule: ", findPossibleSchedule('100635729'))

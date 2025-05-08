@@ -58,6 +58,10 @@ andyS -- 2025-05-08 5:17
   - design doc changes:
     - removed extra database organization and added math module
 
+jadyL -- 2025-05-08 11:22
+  - cleanup no longer used functions
+  - changed NUM_OF_REQUESTED_CLASSES to 15
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
