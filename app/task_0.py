@@ -1,7 +1,7 @@
 import csv
 import math
 
-STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv" # StudentRequest-Sample2.csv
+STUDENT_REQUEST_FILE = "student_test.csv" # StudentRequest-Sample2.csv
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
@@ -62,23 +62,29 @@ def checkSchedule(studentid, availability):
 
 #recursively check available periods, and returns if successful, the furthest it got into the schedule, and the class it failed to add
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
-    # print(current_class, schedule_so_far, working, max_sched, failed_classes)
+    print(current_class, schedule_so_far, working, max_sched, failed_classes)
     if ((current_class > 0) # avoids empty list
         and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
-        and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1)
-        and (schedule_so_far[-1] != "-")): # for partial schedules ): # checks for a half period placed on a full period
+        and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
+        and (schedule_so_far[-1] != "-")): # for partial schedules ):
         return [False, max_sched, failed_classes]
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         # print(schedule_so_far)
         student_schedules[studentid] =  schedule_so_far
         return [True, max_sched, failed_classes]
+    print(schedule_so_far, len(schedule_so_far))
+    print(max_sched)
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0])): # checks for max schedule reached, for first iteration
+        print("a")
         max_sched.clear()
         failed_classes.clear()
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
     elif (len(schedule_so_far) == len(max_sched[0])): # checks for max schedule reached, for all other iterations
+        print("b")
+        print(schedule_so_far)
+        print(max_sched[0])
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
