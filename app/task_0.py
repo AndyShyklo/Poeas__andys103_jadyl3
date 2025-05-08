@@ -1,7 +1,8 @@
 import csv
+import math
 
-STUDENT_REQUEST_FILE = "student_req.csv"
-CLASSES_FILE = "classes.csv"
+STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
+CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 9
 student_requests = []
 student_schedules = {}
@@ -66,7 +67,10 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
     print(availability)
     print(type(availability))
-    if (current_class > 0) and (schedule_so_far.find(schedule_so_far[-1]) != len(schedule_so_far) - 1) and (schedule_so_far[-1] != "-"): # if period is double booked
+    if ((current_class > 0) # avoids empty list
+        and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
+        and (schedule_so_far.index(math.floor(schedule_so_far[-1])) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
+        and (schedule_so_far[-1] != "-")): # for partial schedules 
         return [False, max_sched, failed_classes]
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         # print(schedule_so_far)
@@ -83,10 +87,10 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
     if len(availability[current_class]) == 0: # if no section is available
-        return checkScheduleR(studentid, availability, current_class+1, schedule_so_far+"-", False, max_sched, failed_classes)
+        return checkScheduleR(studentid, availability, current_class+1, schedule_so_far.append("-"), False, max_sched, failed_classes)
     for i in range(len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
-        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far+str(pd), False, max_sched, failed_classes)
+        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far.append(pd), False, max_sched, failed_classes)
         if result[0]:
             return result
     return [False, max_sched, failed_classes]

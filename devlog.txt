@@ -45,3 +45,14 @@ andyS -- 2025-05-05 1:34
   - made 1D array of string with each student-class per row, if scheduled
   - made 2D array of schedules per student schedule, if scheduled or if not
   - allowed methods for specific users, not just general (overall, fixed formatting and added info statements)
+
+jadyL -- 2025-05-07 23:59
+  - schedule string -> list of integers and doubles
+  - added math module
+  - added master schedule and student request
+
+TODO:
+  - rewrite returnListofAvailability function to support singleton and class availability priority.
+  - make a half periods x.1 and make b half periods x.2
+  - replace NUM_OF_REQUESTED_CLASSES
+  - fix translate function(s?) to account for change in schedule format
