@@ -22,12 +22,12 @@ with open(CLASSES_FILE, newline='') as csvfile:
     for row in document:
         class_list.append(row)
 
-# goes through the request and adds the possible periods for the class in course info
+# goes through the request and adds the section-ids for available classes in course info
 # returns a dictionary where student id is the key, and the list of lists is the value
-# change period 10 to 0.
 #  ----------------------------------------- NOT WORKING RIGHT NOW
 def returnListofAvailability(student_request, course_info):
     availability = []
+    print(student_request)
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         print(classcode)
@@ -37,18 +37,22 @@ def returnListofAvailability(student_request, course_info):
             for course in course_info:
                 if course["CourseCode"] == classcode:
                     if int(course["Remaining Capacity"]) > 0:
-                        found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], course["Remaining Capacity"]])
+                        found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], int(course["Remaining Capacity"])])
                         # if (course["Cycle Day"] == "10101"):
                         #     availablePds.append(str(int(course["PeriodID"]) + .1))
                         # elif (course["Cycle Day"] == "01010"):
                         #     availablePds.append(str(int(course["PeriodID"]) + .2))
                         # else:
                         #     availablePds.append(course["PeriodID"])
-                for avail in found_courses:
-                    print("in progress still")
+        found_courses.sort(key=lambda L: L[3], reverse=True)
+        # print(found_courses)
+        for avail in found_courses:
+            availablePds.append(avail[0])
         availability.append(availablePds)
-    print(availability)
+    # print(availability)
     return availability
+
+print(returnListofAvailability(student_requests[0], class_list))
 
 def selectionSorter(availability):
     avail_temp = []
@@ -236,5 +240,5 @@ def formatListTotalClass():
                 classArr.append(str)
     return(classArr)
 
-print("\n", "Task 1:", formatListTotalClass(), "\n")
-print("\n", "Task 2:", formatListTotal(), "\n")
+# print("\n", "Task 1:", formatListTotalClass(), "\n")
+# print("\n", "Task 2:", formatListTotal(), "\n")
