@@ -62,8 +62,12 @@ jadyL -- 2025-05-08 11:22
   - cleanup no longer used functions
   - changed NUM_OF_REQUESTED_CLASSES to 15
 
+jadyL -- 2025-05-09 00:25
+  - stash avail wip code
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
   - replace NUM_OF_REQUESTED_CLASSES
   - fix translate function(s?) to account for change in schedule format
+  - low priority: change periods out of strings
