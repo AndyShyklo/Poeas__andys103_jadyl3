@@ -53,6 +53,23 @@ def returnListofAvailability(student_request, course_info):
     return availability
 
 print(returnListofAvailability(student_requests[0], class_list))
+def returnListofAvailabilityOld(student_request, course_info):
+    availability = []
+    for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
+        classcode = student_request["Course"+str(i)]
+        print(classcode)
+        availablePds = []
+        if classcode:
+            for course in course_info:
+                if course["CourseCode"] == classcode:
+                    if int(course["Capacity"]) > 0:
+                        if int(course["PeriodID"]) == 10:
+                            availablePds.append('0')
+                        else:
+                            availablePds.append(course["PeriodID"])
+        availability.append(availablePds)
+    print(availability)
+    return availability
 
 def selectionSorter(availability):
     avail_temp = []
@@ -75,46 +92,62 @@ def checkSchedule(studentid, availability):
 
 #recursively check available periods, and returns if successful, the furthest it got into the schedule, and the class it failed to add
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
+    print("trace1")
     print(current_class, schedule_so_far, working, max_sched, failed_classes)
     if ((current_class > 0) # avoids empty list
         and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
         and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
         and (schedule_so_far[-1] != "-")): # for partial schedules ):
+        print("trace2")
         return [False, max_sched, failed_classes]
+    print("trace11")
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         # print(schedule_so_far)
+        print("trace3")
         student_schedules[studentid] =  schedule_so_far
         return [True, max_sched, failed_classes]
     # print(schedule_so_far, len(schedule_so_far))
     # print(max_sched)
+    print("trace12")
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0])): # checks for max schedule reached, for first iteration
-        # print("a")
+        print("trace4")
         max_sched.clear()
         failed_classes.clear() # erase later, seems to work decently, but can schedule last class and print valid max schedule
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
+        print(max_sched, failed_classes)
     elif (len(schedule_so_far) == len(max_sched[0])): # checks for max schedule reached, for all other iterations
-        # print("b")
-        # print(schedule_so_far)
-        # print(max_sched[0])
-        max_sched.clear()
-        failed_classes.clear()
+        print("trace5")
+        print(schedule_so_far)
+        print(max_sched, max_sched[0])
+        # max_sched.clear()
+        # failed_classes.clear()
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
+        print(max_sched, failed_classes)
+    print("trace13")
+    print(max_sched)
     if len(availability[current_class]) == 0: # if no section is available
+        print("trace6")
         schedule_so_far.append("-")
         result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
         schedule_so_far.pop()
         return(result)
+    print("trace14")
+    print(max_sched)
     for i in range(len(availability[current_class])): # general recursive sequence, for every case
+        print("trace7")
+        print(max_sched)
         pd = availability[current_class][i]
         schedule_so_far.append(pd)
+        print(max_sched)
         result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
         if result[0]:
             return result
         schedule_so_far.pop()
+    print("trace8")
     return [False, max_sched, failed_classes]
 
 # test recursion function
@@ -165,6 +198,7 @@ def createSchedules():
 def createSchedule(student):
     osis = student['StudentID']
     availability = returnListofAvailability(student, class_list)
+    print(availability)
     # print(availability)
     # print(checkSchedule(osis, availability))
     sched = checkSchedule(osis, availability)
