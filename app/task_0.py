@@ -29,16 +29,18 @@ def returnListofAvailability(student_request, course_info):
     availability = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
+        print(classcode)
         availablePds = []
         if classcode:
             for course in course_info:
                 if course["CourseCode"] == classcode:
-                    if int(course["Remaining Capacity"]) > 0:
+                    if True:
                         if int(course["PeriodID"]) == 10:
                             availablePds.append('0')
                         else:
                             availablePds.append(course["PeriodID"])
         availability.append(availablePds)
+    print(availability)
     return availability
 
 def selectionSorter(availability):
@@ -72,19 +74,21 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         # print(schedule_so_far)
         student_schedules[studentid] =  schedule_so_far
         return [True, max_sched, failed_classes]
-    print(schedule_so_far, len(schedule_so_far))
-    print(max_sched)
+    # print(schedule_so_far, len(schedule_so_far))
+    # print(max_sched)
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0])): # checks for max schedule reached, for first iteration
-        print("a")
+        # print("a")
         max_sched.clear()
-        failed_classes.clear()
+        failed_classes.clear() # erase later, seems to work decently, but can schedule last class and print valid max schedule
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
     elif (len(schedule_so_far) == len(max_sched[0])): # checks for max schedule reached, for all other iterations
-        print("b")
-        print(schedule_so_far)
-        print(max_sched[0])
+        # print("b")
+        # print(schedule_so_far)
+        # print(max_sched[0])
+        max_sched.clear()
+        failed_classes.clear()
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
