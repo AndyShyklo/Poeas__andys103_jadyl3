@@ -25,20 +25,27 @@ with open(CLASSES_FILE, newline='') as csvfile:
 # goes through the request and adds the possible periods for the class in course info
 # returns a dictionary where student id is the key, and the list of lists is the value
 # change period 10 to 0.
+#  ----------------------------------------- NOT WORKING RIGHT NOW
 def returnListofAvailability(student_request, course_info):
     availability = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         print(classcode)
         availablePds = []
+        found_courses = []
         if classcode:
             for course in course_info:
                 if course["CourseCode"] == classcode:
-                    if True:
-                        if int(course["PeriodID"]) == 10:
-                            availablePds.append('0')
-                        else:
-                            availablePds.append(course["PeriodID"])
+                    if int(course["Remaining Capacity"]) > 0:
+                        found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], course["Remaining Capacity"]])
+                        # if (course["Cycle Day"] == "10101"):
+                        #     availablePds.append(str(int(course["PeriodID"]) + .1))
+                        # elif (course["Cycle Day"] == "01010"):
+                        #     availablePds.append(str(int(course["PeriodID"]) + .2))
+                        # else:
+                        #     availablePds.append(course["PeriodID"])
+                for avail in found_courses:
+                    print("in progress still")
         availability.append(availablePds)
     print(availability)
     return availability
