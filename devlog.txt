@@ -65,6 +65,11 @@ jadyL -- 2025-05-08 11:22
 jadyL -- 2025-05-09 00:25
   - stash avail wip code
 
+andyS -- 2025-05-12 12:37
+  - edited return list of availability to sort by length
+  - fixed recursive function to return proper invalid classes
+  - fixed master schedule for remaining capacity
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
