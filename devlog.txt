@@ -70,6 +70,11 @@ andyS -- 2025-05-12 12:37
   - fixed recursive function to return proper invalid classes
   - fixed master schedule for remaining capacity
 
+jadyL -- 2025-05-12 11:30
+  - add class code to front of availability sublists. 
+  - example of current availability sublist: (ZLUN, (1, 4, 0), (2, 5, 0), (3, 6, 0)...) 
+  - change how sorting the list works
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2

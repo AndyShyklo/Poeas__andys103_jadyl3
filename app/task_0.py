@@ -31,7 +31,7 @@ def returnListofAvailability(student_request, course_info):
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         # print(classcode, type(classcode), len(classcode))
-        availablePds = []
+        availablePds = [classcode]
         found_courses = []
         if classcode != None:
             if len(classcode) > 0:
@@ -41,29 +41,31 @@ def returnListofAvailability(student_request, course_info):
                     if course["CourseCode"] == classcode:
                         if int(course["Remaining Capacity"]) > 0:
                             found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], int(course["Remaining Capacity"])])
-                            # availablePds.append(course["SectionID"])
-                            # if (course["Cycle Day"] == "10101"):
-                            #     availablePds.append(str(int(course["PeriodID"]) + .1))
-                            # elif (course["Cycle Day"] == "01010"):
-                            #     availablePds.append(str(int(course["PeriodID"]) + .2))
-                            # else:
-                            #     availablePds.append(course["PeriodID"])
         found_courses.sort(key=lambda L: L[3], reverse=True)
         for avail in found_courses:
-            availablePds.append(avail[0])
+            cycle = avail[2]
+            if cycle == "11111":
+                cycle = 0
+            elif cycle == "10101":
+                cycle = 1
+            else:
+                cycle = 2
+            availablePds.append((avail[0], avail[1], cycle))
         if len(found_courses) > 0:
             availability.append(availablePds)
-    count = 0
-    for item in availability:
-        if count < len(item):
-            count = len(item)
-    for i in range(0, count):
-        for item in availability:
-            if i == len(item):
-                avail_temp.append(item)
+    availability.sort(key=len)
+    return availability
+    # count = 0
+    # for item in availability:
+    #     if count < len(item):
+    #         count = len(item)
+    # for i in range(0, count):
+    #     for item in availability:
+    #         if i == len(item):
+    #             avail_temp.append(item)
 
-    # print(avail_temp)
-    return avail_temp
+    # # print(avail_temp)
+    # return avail_temp
 
 # old availability function. works but not with doubles, just single 11111 classes
 # works with updated recursive functions
