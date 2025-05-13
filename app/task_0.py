@@ -36,7 +36,7 @@ def returnListofAvailability(student_request, course_info):
         if classcode != None:
             if len(classcode) > 0:
                 # print(classcode, type(classcode), len(classcode), found_courses)
-                availablePds.append(classcode)
+                # availablePds.append(classcode)
                 for course in course_info:
                     if course["CourseCode"] == classcode:
                         if int(course["Remaining Capacity"]) > 0:
@@ -117,6 +117,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
         and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
         and (schedule_so_far[-1] != "-")): # for partial schedules ):
+        print("trace1")
         return [False, max_sched, failed_classes]
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         student_schedules[studentid] =  schedule_so_far
@@ -131,6 +132,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         max_sched.append(schedule_so_far)
         tempE = f"Course{current_class + 1}, {availability[current_class]}"
         failed_classes.append(tempE)
+    print(availability[current_class])
     if len(availability[current_class]) == 0: # if no section is available
         schedule_so_far.append("-")
         result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
@@ -138,12 +140,18 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
         return(result)
     for i in range(len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
+        print(pd)
         schedule_so_far.append(pd)
         result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
         if result[0]:
             return result
         schedule_so_far.pop()
     return [False, max_sched, failed_classes]
+
+
+# ["StudentID" ["CourseCode", "SectionID", "Period"]]
+
+
 
 # test recursion function
 # print(student_schedules)
@@ -253,7 +261,7 @@ def formatListTotal():
         studentsTotal.append(studentC)
     return(studentsTotal)
 
-# formatListTotal()
+formatListTotal()
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1
 def formatListTotalClass():
