@@ -75,6 +75,11 @@ jadyL -- 2025-05-12 11:30
   - example of current availability sublist: (ZLUN, (1, 4, 0), (2, 5, 0), (3, 6, 0)...) 
   - change how sorting the list works
 
+andyS -- 2025-05-14 2:12
+  - created new, separate testing recursive function
+  - added a seemingly working solution for scheduling half periods
+  - needs work on returning the actual list of classes scheduled
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
