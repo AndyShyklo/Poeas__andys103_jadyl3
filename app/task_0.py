@@ -1,7 +1,7 @@
 import csv
 import math
 
-STUDENT_REQUEST_FILE = "student_test.csv" # StudentRequest-Sample2.csv     student_test.csv
+STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv" # StudentRequest-Sample2.csv     student_test.csv
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
@@ -112,13 +112,16 @@ def checkSchedule(studentid, availability):
     return checkScheduleR(studentid, availability, 0, [], False, [], [])
 
 def checkScheduleS(studentid, availability):
-    return checkScheduleRS(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], False, [], [])
+    return checkScheduleRS(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], False, [], [], [])
 
-def checkScheduleRS(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
+
+#new recursive function that works for doubles and half periods, returning both scheduled classes and periods
+#currently error with class code ZQPD1, which has cycle 00110???
+def checkScheduleRS(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes, class_courses):
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         student_schedules[studentid] =  schedule_so_far
-        return [True, max_sched, failed_classes]
+        return [True, max_sched, failed_classes, class_courses]
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0]) - 1): # checks for max schedule reached, for first iteration
         max_sched.clear()
         failed_classes.clear() # erase later, seems to work decently, but can schedule last class and print valid max schedule
@@ -132,39 +135,41 @@ def checkScheduleRS(studentid, availability, current_class, schedule_so_far, wor
     for i in range(1, len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
         # print(pd, availability[current_class][0])
-        comp = schedule_so_far.copy()
         # print(availability[current_class])
-        if schedule_so_far[int(pd[1])-1] == 0.0:
+        comp = schedule_so_far.copy()
+        if comp[int(pd[1])-1] == 0.0:
             # print("trace1")
-            # print(schedule_so_far[int(pd[1])-1])
+            # print(comp[int(pd[1])-1])
             if pd[2] == 0:
                 # print("trace4")
-                schedule_so_far[int(pd[1])-1] += 1.0
+                comp[int(pd[1])-1] += 1.0
             elif pd[2] == 1:
-                schedule_so_far[int(pd[1])-1] += 0.1
+                comp[int(pd[1])-1] += 0.1
             elif pd[2] == 2:
-                schedule_so_far[int(pd[1])-1] += 0.9
-        elif schedule_so_far[int(pd[1])-1] == 0.1:
+                comp[int(pd[1])-1] += 0.9
+        elif comp[int(pd[1])-1] == 0.1:
             # print("trace2")
-            # print(schedule_so_far[int(pd[1])-1])
+            # print(comp[int(pd[1])-1])
             if pd[2] == 2:
-                schedule_so_far[int(pd[1])-1] += 0.9
-        elif schedule_so_far[int(pd[1])-1] == 0.9:
+                comp[int(pd[1])-1] += 0.9
+        elif comp[int(pd[1])-1] == 0.9:
             # print("trace3")
-            # print(schedule_so_far[int(pd[1])-1])
+            # print(comp[int(pd[1])-1])
             if pd[2] == 1:
-                schedule_so_far[int(pd[1])-1] += 0.1
+                comp[int(pd[1])-1] += 0.1
         # print(comp)
-        # print(schedule_so_far)
+        # print(comp)
         if comp == schedule_so_far:
-            result = [False, max_sched, failed_classes]
+            result = [False, max_sched, failed_classes, class_courses]
         else:
-            result = checkScheduleRS(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
+            class_courses_copy = class_courses.copy()
+            class_courses_copy.append([availability[current_class][0], pd])
+            result = checkScheduleRS(studentid, availability, current_class+1, comp, False, max_sched, failed_classes.copy(), class_courses_copy)
         # print(result)
         # print(pd)
         if result != None and result[0]:
             return result
-    return [False, max_sched, failed_classes]
+    return [False, max_sched, failed_classes, class_courses]
 
 
 # [1.0, 0.1, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
@@ -277,6 +282,7 @@ def createSchedule(student):
         # print(sched[1])
         translated = translateSchedule(student_schedules[osis], student)
         print("Schedule:", sched[1])
+        print("Total List:", sched[3])
         print("YES schedule for " + osis)
         return([True, translated])
     else:
@@ -292,7 +298,7 @@ def createSchedule(student):
             except:
                 # print("not exists")
                 totalF[courseF[i]] = [fails[i]]
-        print("Scheduling failed at", list(totalF.keys()), ", but scheduled for", len(list(totalF.values())[0]), "iterations, with", len(list(totalF.values())[0][0]), "periods scheduled total, and with full dict:", totalF)
+        print("Scheduling failed at", list(totalF.keys()), ", but scheduled for", len(list(totalF.values())[0]), "iterations, with", len(list(totalF.values())[0][0]), "periods scheduled total, and with full dict:", totalF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
         return ([False, sched])
 

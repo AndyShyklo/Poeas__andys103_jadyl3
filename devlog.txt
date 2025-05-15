@@ -80,6 +80,11 @@ andyS -- 2025-05-14 2:12
   - added a seemingly working solution for scheduling half periods
   - needs work on returning the actual list of classes scheduled
 
+andyS -- 2025-05-15 1:44
+  - createScheduleS and RS work well with schedule for use with doubles and halves
+  - fixed error with duplicate classes
+  - current error with course code ZQPD1 having invalid cycle 00110
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
