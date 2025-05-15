@@ -1,7 +1,7 @@
 import csv
 import math
 
-STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv" # StudentRequest-Sample2.csv     student_test.csv
+STUDENT_REQUEST_FILE = "student_test.csv" # StudentRequest-Sample2.csv     student_test.csv
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
@@ -50,9 +50,9 @@ def returnListofAvailability(student_request, course_info):
                 cycle = 1
             elif cycle == "01010":
                 cycle = 2
-            if cycle != "00000":
+            if cycle != "00000" and type(cycle) is int:
                 availablePds.append((avail[0], avail[1], cycle))
-        if len(found_courses) > 0:
+        if len(found_courses) > 0 and len(availablePds) > 1:
             availability.append(availablePds)
     availability.sort(key=len)
     return availability
@@ -120,6 +120,7 @@ def checkScheduleS(studentid, availability):
 def checkScheduleRS(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes, class_courses):
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
+        pd = class_courses[-1]
         student_schedules[studentid] =  schedule_so_far
         return [True, max_sched, failed_classes, class_courses]
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0]) - 1): # checks for max schedule reached, for first iteration
@@ -225,10 +226,9 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
 
 # ["StudentID" ["CourseCode", "SectionID", "Period"]]
 
-
-
 # test recursion function
 # print(student_schedules)
+
 
 # translates the schedule into a readable
 def translateSchedule(schedule, student_req):
@@ -250,9 +250,10 @@ def createSchedules():
         # print(checkSchedule(osis, availability))
         sched = checkScheduleS(osis, availability)
         if (sched[0]):
+            print("hi")
             # print(sched[1])
-            print("Schedule:", translateSchedule(student_schedules[osis], student))
-            print("YES schedule for " + osis)
+            # print("Schedule:", translateSchedule(student_schedules[osis], student))
+            # print("YES schedule for " + osis)
         else:
             # print(sched)
             fails = sched[1]
