@@ -24,7 +24,7 @@ with open(CLASSES_FILE, newline='') as csvfile:
 
 # goes through the request and adds the section-ids for available classes in course info
 # returns a dictionary where student id is the key, and the list of lists is the value
-#  ----------------------------------------- NOT WORKING RIGHT NOW
+# if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
 def returnListofAvailability(student_request, course_info):
     availability = []
     avail_temp = []
@@ -122,6 +122,7 @@ def checkScheduleRS(studentid, availability, current_class, schedule_so_far, wor
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         pd = class_courses[-1]
         student_schedules[studentid] =  schedule_so_far
+        # organizeSchedule(schedule_so_far, class_courses)
         return [True, max_sched, failed_classes, class_courses]
     if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0]) - 1): # checks for max schedule reached, for first iteration
         max_sched.clear()
@@ -230,6 +231,12 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, work
 # print(student_schedules)
 
 
+# def organizeSchedule(schedule_so_far, class_courses):
+#     class_courses.sort(key=lambda L: int(L[1][1]), reverse=False)
+#     print(class_courses)
+#     for class in class_courses:
+#         if
+
 # translates the schedule into a readable
 def translateSchedule(schedule, student_req):
     sched = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None", '6': "None", '7': "None", '8': "None", '9': "None", '0': "None"}
@@ -285,7 +292,7 @@ def createSchedule(student):
         print("Schedule:", sched[1])
         print("Total List:", sched[3])
         print("YES schedule for " + osis)
-        return([True, translated])
+        return([True, osis, sched])
     else:
         # print(sched)
         fails = sched[1]
@@ -337,13 +344,17 @@ def formatListTotal():
         studentsTotal.append(studentC)
     return(studentsTotal)
 
-formatListTotal()
+# print(formatListTotal())
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1
 def formatListTotalClass():
     classArr = []
-    twoArr = formatListTotal()
-    if len(twoArr) == 0 or len(twoArr) == 1:
+    twoArr = []
+    # print(student_requests)
+    for student in student_requests:
+        twoArr.append(createSchedule(student))
+    print(twoArr)
+    if len(twoArr) == 0:
         return("No items in 2D array")
     for a in twoArr[1:]:
         for b in a[5:]:
@@ -354,5 +365,5 @@ def formatListTotalClass():
                 classArr.append(str)
     return(classArr)
 
-# print("\n", "Task 1:", formatListTotalClass(), "\n")
+print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
