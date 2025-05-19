@@ -346,22 +346,28 @@ def formatListTotal():
 
 # print(formatListTotal())
 
-# prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1
+# prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
 def formatListTotalClass():
     classArr = []
     twoArr = []
     # print(student_requests)
     for student in student_requests:
-        twoArr.append(createSchedule(student))
-    print(twoArr)
-    if len(twoArr) == 0:
-        return("No items in 2D array")
-    for a in twoArr[1:]:
-        for b in a[5:]:
-            if b != "":
-                str = ",".join(a[0:4]) + ","
-                c = b.split("-")
-                str += c[0] + "," + c[1]
+        twoArr = (createSchedule(student))
+        print(twoArr)
+        if len(twoArr) == 0:
+            return("No items in 2D array")
+        for a in twoArr[2][3]:
+            print(a)
+            if a != "":
+                strList = [student['StudentID']]
+                strList.append(student['LastName'])
+                strList.append(student['FirstName'])
+                strList.append(student['SchoolYear'])
+                strList.append(student['OffClass'])
+                strList.append(a[0] + "-" + a[1][0])
+                strList.append(a[1][1])
+                print(strList)
+                str = ",".join(strList)
                 classArr.append(str)
     return(classArr)
 
