@@ -30,7 +30,7 @@ def returnListofAvailability(student_request, course_info):
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         # print(classcode, type(classcode), len(classcode))
-        availablePds = [classcode]
+        availablePds = []
         found_courses = []
         if classcode != None:
             if len(classcode) > 0:
@@ -40,17 +40,16 @@ def returnListofAvailability(student_request, course_info):
                     if course["CourseCode"] == classcode:
                         if int(course["Remaining Capacity"]) > 0:
                             found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], int(course["Remaining Capacity"])])
-        found_courses.sort(key=lambda L: L[1], reverse=True) # check for doubles
-        if found_courses[0][1] == found_courses[1][1]: # double case
+        found_courses.sort(key=lambda L: L[0], reverse=True) # check for doubles
+        if len(found_courses) > 1 and found_courses[0][0] == found_courses[1][0]: # double case
             double_courses = []
-            for i in range(len(found_courses) / 2):
+            for i in range(int(len(found_courses) / 2)):
                 avail1 = found_courses[2 * i]
                 avail2 = found_courses[2 * i + 1]
                 cycle1 = cycleToNumber(avail1[2])
-                cycle2 = cycleToNumber(avail[2])
-                if type(cycle1) is int and type(cycle2) is int: # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be). 
-                    double_courses.append(avail1[0], (avail1[1], avail2[1]), (cycle1, cycle2), min(avail1[3], avail2[3]))
-            availablePds = double_courses
+                cycle2 = cycleToNumber(avail2[2])
+                if type(cycle1) is int and type(cycle2) is int: # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be).
+                    availablePds.append((avail1[0], (avail1[1], avail2[1]), (cycle1, cycle2), min(avail1[3], avail2[3])))
         else: # normal case
             for avail in found_courses:
                 cycle = cycleToNumber(avail[2])
@@ -59,6 +58,8 @@ def returnListofAvailability(student_request, course_info):
         availablePds.sort(key=lambda L: L[3], reverse=True) # sort by availability
 
         if len(found_courses) > 0 and len(availablePds) > 1: # add sublist to full list
+            availablePds.insert(0, classcode)
+            print(availablePds)
             availability.append(availablePds)
     availability.sort(key=len)
     return availability
@@ -112,7 +113,7 @@ def selectionSorter(availability):
 def availabilitySorter(availability):
     avail_temp = []
 
-#wrapper function, calls R with osis#, availability list, starting index, schedule array, the WIP schedule, the empty failed classes, and an empty assigned classes 
+#wrapper function, calls R with osis#, availability list, starting index, schedule array, the WIP schedule, the empty failed classes, and an empty assigned classes
 def checkSchedule(studentid, availability):
     return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], [], [])
 
@@ -138,18 +139,30 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_
     for i in range(1, len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
         comp = schedule_so_far.copy()
-        if len(pd[1]) > 1: # double case
+        if (type(pd[1]) is not str) and len(pd[1]) > 1: # double case
+            print(pd)
             pd1 = pd[1][0]
             pd1cycle = pd[2][0]
             pd2 = pd[1][1]
             pd2cycle = pd[2][1]
             comp[int(pd1)-1] += cycleToDouble(pd1cycle)
             comp[int(pd2)-1] += cycleToDouble(pd2cycle)
+            ind = -1
+            for c in comp:
+                if c == 0.2:
+                    ind = 0
             if max(comp) > 1: # if 2 b days or a or b on full period
                 comp = schedule_so_far
-            elif comp.index(0.2) != -1: # if 2 a days
+            elif ind != -1: # if 2 a days
                 comp = schedule_so_far
-        else:
+            if comp == schedule_so_far:
+                result = [False, max_sched, failed_classes, class_courses]
+            else:
+                class_courses_copy = class_courses.copy()
+                class_courses_copy.append([availability[current_class][0], pd])
+                result = checkScheduleR(studentid, availability, current_class+1, comp, max_sched, failed_classes.copy(), class_courses_copy)
+
+        else: #non double case
         # print(pd, availability[current_class][0])
         # print(availability[current_class])
             if comp[int(pd[1])-1] == 0.0:
@@ -172,13 +185,13 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_
                 # print(comp[int(pd[1])-1])
                 if pd[2] == 1:
                     comp[int(pd[1])-1] += 0.1
+            if comp == schedule_so_far:
+                result = [False, max_sched, failed_classes, class_courses]
+            else:
+                class_courses_copy = class_courses.copy()
+                class_courses_copy.append([availability[current_class][0], pd])
+                result = checkScheduleR(studentid, availability, current_class+1, comp, max_sched, failed_classes.copy(), class_courses_copy)
         # print(comp)
-        if comp == schedule_so_far:
-            result = [False, max_sched, failed_classes, class_courses]
-        else:
-            class_courses_copy = class_courses.copy()
-            class_courses_copy.append([availability[current_class][0], pd])
-            result = checkScheduleR(studentid, availability, current_class+1, comp, False, max_sched, failed_classes.copy(), class_courses_copy)
         # print(result)
         # print(pd)
         if result != None and result[0]:
