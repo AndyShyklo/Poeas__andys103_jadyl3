@@ -27,7 +27,6 @@ with open(CLASSES_FILE, newline='') as csvfile:
 # if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
 def returnListofAvailability(student_request, course_info):
     availability = []
-    avail_temp = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
         # print(classcode, type(classcode), len(classcode))
@@ -41,32 +40,38 @@ def returnListofAvailability(student_request, course_info):
                     if course["CourseCode"] == classcode:
                         if int(course["Remaining Capacity"]) > 0:
                             found_courses.append([course["SectionID"], course["PeriodID"], course["Cycle Day"], int(course["Remaining Capacity"])])
-        found_courses.sort(key=lambda L: L[3], reverse=True)
-        for avail in found_courses:
-            cycle = avail[2]
-            if cycle == "11111":
-                cycle = 0
-            elif cycle == "10101":
-                cycle = 1
-            elif cycle == "01010":
-                cycle = 2
-            if cycle != "00000" and type(cycle) is int:
-                availablePds.append((avail[0], avail[1], cycle))
-        if len(found_courses) > 0 and len(availablePds) > 1:
+        found_courses.sort(key=lambda L: L[1], reverse=True) # check for doubles
+        if found_courses[0][1] == found_courses[1][1]: # double case
+            double_courses = []
+            for i in range(len(found_courses) / 2):
+                avail1 = found_courses[2 * i]
+                avail2 = found_courses[2 * i + 1]
+                cycle1 = cycleToNumber(avail1[2])
+                cycle2 = cycleToNumber(avail[2])
+                if type(cycle1) is int and type(cycle2) is int: # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be). 
+                    double_courses.append(avail1[0], (avail1[1], avail2[1]), (cycle1, cycle2), min(avail1[3], avail2[3]))
+            availablePds = double_courses
+        else: # normal case
+            for avail in found_courses:
+                cycle = cycleToNumber(avail[2])
+                if cycle != "00000" and type(cycle) is int:
+                    availablePds.append((avail[0], avail[1], cycle, avail[3]))
+        availablePds.sort(key=lambda L: L[3], reverse=True) # sort by availability
+
+        if len(found_courses) > 0 and len(availablePds) > 1: # add sublist to full list
             availability.append(availablePds)
     availability.sort(key=len)
     return availability
-    # count = 0
-    # for item in availability:
-    #     if count < len(item):
-    #         count = len(item)
-    # for i in range(0, count):
-    #     for item in availability:
-    #         if i == len(item):
-    #             avail_temp.append(item)
 
-    # # print(avail_temp)
-    # return avail_temp
+def cycleToNumber(cycle):
+    if cycle == "11111":
+        return 0
+    elif cycle == "10101":
+        return 1
+    elif cycle == "01010":
+        return 2
+    else:
+        return cycle
 
 # old availability function. works but not with doubles, just single 11111 classes
 # works with updated recursive functions
@@ -107,17 +112,13 @@ def selectionSorter(availability):
 def availabilitySorter(availability):
     avail_temp = []
 
-#wrapper function, starts at 1 as list starts with student id
+#wrapper function, calls R with osis#, availability list, starting index, schedule array, the WIP schedule, the empty failed classes, and an empty assigned classes 
 def checkSchedule(studentid, availability):
-    return checkScheduleR(studentid, availability, 0, [], False, [], [])
-
-def checkScheduleS(studentid, availability):
-    return checkScheduleRS(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], False, [], [], [])
-
+    return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], [], [])
 
 #new recursive function that works for doubles and half periods, returning both scheduled classes and periods
 #currently error with class code ZQPD1, which has cycle 00110???
-def checkScheduleRS(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes, class_courses):
+def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_sched, failed_classes, class_courses):
     # print(current_class, schedule_so_far, working, max_sched, failed_classes)
     if current_class >= len(availability): # end of recursive cycle, passes scheduling
         pd = class_courses[-1]
@@ -136,94 +137,63 @@ def checkScheduleRS(studentid, availability, current_class, schedule_so_far, wor
         failed_classes.append(tempE)
     for i in range(1, len(availability[current_class])): # general recursive sequence, for every case
         pd = availability[current_class][i]
+        comp = schedule_so_far.copy()
+        if len(pd[1]) > 1: # double case
+            pd1 = pd[1][0]
+            pd1cycle = pd[2][0]
+            pd2 = pd[1][1]
+            pd2cycle = pd[2][1]
+            comp[int(pd1)-1] += cycleToDouble(pd1cycle)
+            comp[int(pd2)-1] += cycleToDouble(pd2cycle)
+            if max(comp) > 1: # if 2 b days or a or b on full period
+                comp = schedule_so_far
+            elif comp.index(0.2) != -1: # if 2 a days
+                comp = schedule_so_far
+        else:
         # print(pd, availability[current_class][0])
         # print(availability[current_class])
-        comp = schedule_so_far.copy()
-        if comp[int(pd[1])-1] == 0.0:
-            # print("trace1")
-            # print(comp[int(pd[1])-1])
-            if pd[2] == 0:
-                # print("trace4")
-                comp[int(pd[1])-1] += 1.0
-            elif pd[2] == 1:
-                comp[int(pd[1])-1] += 0.1
-            elif pd[2] == 2:
-                comp[int(pd[1])-1] += 0.9
-        elif comp[int(pd[1])-1] == 0.1:
-            # print("trace2")
-            # print(comp[int(pd[1])-1])
-            if pd[2] == 2:
-                comp[int(pd[1])-1] += 0.9
-        elif comp[int(pd[1])-1] == 0.9:
-            # print("trace3")
-            # print(comp[int(pd[1])-1])
-            if pd[2] == 1:
-                comp[int(pd[1])-1] += 0.1
-        # print(comp)
+            if comp[int(pd[1])-1] == 0.0:
+                # print("trace1")
+                # print(comp[int(pd[1])-1])
+                if pd[2] == 0:
+                    # print("trace4")
+                    comp[int(pd[1])-1] += 1.0
+                elif pd[2] == 1:
+                    comp[int(pd[1])-1] += 0.1
+                elif pd[2] == 2:
+                    comp[int(pd[1])-1] += 0.9
+            elif comp[int(pd[1])-1] == 0.1:
+                # print("trace2")
+                # print(comp[int(pd[1])-1])
+                if pd[2] == 2:
+                    comp[int(pd[1])-1] += 0.9
+            elif comp[int(pd[1])-1] == 0.9:
+                # print("trace3")
+                # print(comp[int(pd[1])-1])
+                if pd[2] == 1:
+                    comp[int(pd[1])-1] += 0.1
         # print(comp)
         if comp == schedule_so_far:
             result = [False, max_sched, failed_classes, class_courses]
         else:
             class_courses_copy = class_courses.copy()
             class_courses_copy.append([availability[current_class][0], pd])
-            result = checkScheduleRS(studentid, availability, current_class+1, comp, False, max_sched, failed_classes.copy(), class_courses_copy)
+            result = checkScheduleR(studentid, availability, current_class+1, comp, False, max_sched, failed_classes.copy(), class_courses_copy)
         # print(result)
         # print(pd)
         if result != None and result[0]:
             return result
     return [False, max_sched, failed_classes, class_courses]
 
+def cycleToDouble(cycle):
+    if cycle == 0:
+        return 1.0
+    elif cycle == 1:
+        return 0.1
+    elif cycle == 2:
+        return 0.9
 
 # [1.0, 0.1, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-
-#recursively check available periods, and returns if successful, the furthest it got into the schedule, and the class it failed to add
-def checkScheduleR(studentid, availability, current_class, schedule_so_far, working, max_sched, failed_classes):
-    print(current_class, schedule_so_far, working, max_sched, failed_classes)
-    if ((current_class > 0) # avoids empty list
-        and (schedule_so_far.index(schedule_so_far[-1]) != len(schedule_so_far) - 1) # checks for single, daily periods
-        and (schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))) != len(schedule_so_far) - 1) # checks for a half period placed on a full period
-        and (schedule_so_far[-1] != "-")): # for partial schedules ):
-        # print(current_class)
-        # print(schedule_so_far[-1])
-        # print(schedule_so_far.index(schedule_so_far[-1]))
-        # print(len(schedule_so_far) - 1)
-        # print(schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))))
-        # print("trace1")
-        return [False, max_sched, failed_classes]
-    if current_class >= len(availability): # end of recursive cycle, passes scheduling
-        student_schedules[studentid] =  schedule_so_far
-        return [True, max_sched, failed_classes]
-    if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0]) - 1): # checks for max schedule reached, for first iteration
-        max_sched.clear()
-        failed_classes.clear() # erase later, seems to work decently, but can schedule last class and print valid max schedule
-        max_sched.append(schedule_so_far)
-        tempE = f"Course{current_class + 1}, {availability[current_class]}"
-        failed_classes.append(tempE)
-    elif (len(schedule_so_far) == len(max_sched[0])): # checks for max schedule reached, for all other iterations
-        max_sched.append(schedule_so_far)
-        tempE = f"Course{current_class + 1}, {availability[current_class]}"
-        failed_classes.append(tempE)
-    print(availability[current_class])
-    if len(availability[current_class]) == 0: # if no section is available
-        schedule_so_far.append("-")
-        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
-        schedule_so_far.pop()
-        return(result)
-    for i in range(len(availability[current_class])): # general recursive sequence, for every case
-        pd = availability[current_class][i]
-        print(pd)
-        schedule_so_far.append(pd)
-        # print(current_class)
-        # print(schedule_so_far[-1])
-        # print(schedule_so_far.index(schedule_so_far[-1]))
-        # print(len(schedule_so_far) - 1)
-        # print(schedule_so_far.index(str(math.floor(float(schedule_so_far[-1])))))
-        result = checkScheduleR(studentid, availability, current_class+1, schedule_so_far, False, max_sched, failed_classes)
-        if result[0]:
-            return result
-        schedule_so_far.pop()
-    return [False, max_sched, failed_classes]
-
 
 # ["StudentID" ["CourseCode", "SectionID", "Period"]]
 
@@ -255,7 +225,7 @@ def createSchedules():
         availability = returnListofAvailability(student, class_list)
         # print(availability)
         # print(checkSchedule(osis, availability))
-        sched = checkScheduleS(osis, availability)
+        sched = checkSchedule(osis, availability)
         if (sched[0]):
             print("hi")
             # print(sched[1])
@@ -285,7 +255,7 @@ def createSchedule(student):
     availability = returnListofAvailability(student, class_list)
     # print(availability)
     # print(checkSchedule(osis, availability))
-    sched = checkScheduleS(osis, availability)
+    sched = checkSchedule(osis, availability)
     if (sched[0]):
         # print(sched[1])
         translated = translateSchedule(student_schedules[osis], student)

@@ -85,6 +85,11 @@ andyS -- 2025-05-15 1:44
   - fixed error with duplicate classes
   - current error with course code ZQPD1 having invalid cycle 00110
 
+jadyL -- 2025-05-12 11:30
+  - write doubles into availability
+  - wrote cycleToNumber to reduce redundant code
+  - delete old recursive code
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2
