@@ -90,8 +90,13 @@ jadyL -- 2025-05-19 23:30
   - wrote cycleToNumber to reduce redundant code
   - delete old recursive code
 
-  jadyL -- 2025-05-20 11:46
-    - fix the broken code of yesterday
+jadyL -- 2025-05-20 11:46
+  - fix the broken code of yesterday
+
+jadyL -- 2025-05-20 11:46
+  - found a better way of searching for 0.2
+  - write a special case for bio lab, chem lab, and physics lab
+  - auto format document
 
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
