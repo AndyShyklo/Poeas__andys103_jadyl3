@@ -71,8 +71,8 @@ andyS -- 2025-05-12 12:37
   - fixed master schedule for remaining capacity
 
 jadyL -- 2025-05-12 11:30
-  - add class code to front of availability sublists. 
-  - example of current availability sublist: (ZLUN, (1, 4, 0), (2, 5, 0), (3, 6, 0)...) 
+  - add class code to front of availability sublists.
+  - example of current availability sublist: (ZLUN, (1, 4, 0), (2, 5, 0), (3, 6, 0)...)
   - change how sorting the list works
 
 andyS -- 2025-05-14 2:12
@@ -85,10 +85,13 @@ andyS -- 2025-05-15 1:44
   - fixed error with duplicate classes
   - current error with course code ZQPD1 having invalid cycle 00110
 
-jadyL -- 2025-05-12 11:30
+jadyL -- 2025-05-19 23:30
   - write doubles into availability
   - wrote cycleToNumber to reduce redundant code
   - delete old recursive code
+
+  jadyL -- 2025-05-20 11:46
+    - fix the broken code of yesterday
 
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
