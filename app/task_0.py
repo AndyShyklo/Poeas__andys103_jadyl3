@@ -2,7 +2,7 @@ import csv
 import math
 
 # StudentRequest-Sample2.csv     student_test.csv
-STUDENT_REQUEST_FILE = "student_test.csv"
+STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
@@ -406,22 +406,37 @@ def formatListTotalClass():
     # print(student_requests)
     for student in student_requests:
         twoArr = (createSchedule(student))
-        print(twoArr)
+        # print(twoArr)
         if len(twoArr) == 0:
             return ("No items in 2D array")
         for a in twoArr[2][3]:
-            print(a)
             if a != "":
-                strList = [student['StudentID']]
-                strList.append(student['LastName'])
-                strList.append(student['FirstName'])
-                strList.append(student['SchoolYear'])
-                strList.append(student['OffClass'])
-                strList.append(a[0] + "-" + a[1][0])
-                strList.append(a[1][1])
-                print(strList)
-                str = ",".join(strList)
-                classArr.append(str)
+                print(a)
+                if a[0].split("-")[0] in special_doubles:
+                    for j in range(2):
+                        strList = [student['StudentID']]
+                        strList.append(student['LastName'])
+                        strList.append(student['FirstName'])
+                        strList.append(student['SchoolYear'])
+                        strList.append(student['OffClass'])
+                        i = special_doubles.index(a[0])
+                        strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
+                        strList.append(a[1][1][j])
+                        str = ",".join(strList)
+                        classArr.append(str)
+                elif type(a[1][2]) == tuple:
+                    print("wip")
+                else:
+                    strList = [student['StudentID']]
+                    strList.append(student['LastName'])
+                    strList.append(student['FirstName'])
+                    strList.append(student['SchoolYear'])
+                    strList.append(student['OffClass'])
+                    strList.append(a[0] + "-" + a[1][0])
+                    strList.append(a[1][1])
+                    print(strList)
+                    str = ",".join(strList)
+                    classArr.append(str)
     return (classArr)
 
 
