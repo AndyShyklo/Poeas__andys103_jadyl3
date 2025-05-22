@@ -98,6 +98,9 @@ jadyL -- 2025-05-20 11:46
   - write a special case for bio lab, chem lab, and physics lab
   - auto format document
 
+jadyL -- 2025-05-20 11:46
+  - fix the broken code of yesterday
+
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
   - make a half periods x.1 and make b half periods x.2

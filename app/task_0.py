@@ -43,22 +43,22 @@ def returnListofAvailability(student_request, course_info):
         if classcode != None:
             if len(classcode) > 0:
                 found_courses = sectionsFromCourseCode(classcode, course_info)
-        
+
         found_courses.sort(key=lambda L: L[0], reverse=True)# check for doubles
         if (classcode in special_doubles):  # messed up special case
             ind = special_doubles.index(classcode)
             if (ind == 0 and not biology):
                 biology = True
-                found_courses.append(sectionsFromCourseCode[special_doubles[1]])
-                found_courses.append(sectionsFromCourseCode[special_doubles[2]])
+                found_courses.extend(sectionsFromCourseCode(special_doubles[1], course_info))
+                found_courses.extend(sectionsFromCourseCode(special_doubles[2], course_info))
             elif (ind == 3 and not chemistry):
                 chemistry = True
-                found_courses.append(sectionsFromCourseCode[special_doubles[4]])
-                found_courses.append(sectionsFromCourseCode[special_doubles[5]])
+                found_courses.extend(sectionsFromCourseCode(special_doubles[4], course_info))
+                found_courses.extend(sectionsFromCourseCode(special_doubles[5], course_info))
             elif (ind == 6 and not physics):
                 physics = True
-                found_courses.append(sectionsFromCourseCode[special_doubles[7]])
-                found_courses.append(sectionsFromCourseCode[special_doubles[8]])
+                found_courses.extend(sectionsFromCourseCode(special_doubles[7], course_info))
+                found_courses.extend(sectionsFromCourseCode(special_doubles[8], course_info))
             if (ind in [0, 3, 6]):
                 found_courses.sort(key=lambda L: L[0], reverse=True)
                 for i in range(int(len(found_courses) / 2)):
@@ -91,7 +91,7 @@ def returnListofAvailability(student_request, course_info):
 
         if len(found_courses) > 0 and len(availablePds) > 1:  # add sublist to full list
             availablePds.insert(0, classcode)
-            print(availablePds)
+            # print(availablePds)
             availability.append(availablePds)
     availability.sort(key=len)
     return availability
@@ -196,7 +196,6 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_
         pd = availability[current_class][i]
         comp = schedule_so_far.copy()
         if (type(pd[1]) is not str) and len(pd[1]) > 1:  # double case
-            print(pd)
             pd1 = pd[1][0]
             pd1cycle = pd[2][0]
             pd2 = pd[1][1]
