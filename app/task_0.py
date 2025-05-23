@@ -25,16 +25,10 @@ with open(CLASSES_FILE, newline='') as csvfile:
     for row in document:
         class_list.append(row)
 
-# goes through the request and adds the section-ids for available classes in course info
-# returns a dictionary where student id is the key, and the list of lists is the value
+# goes through the request and adds the course-code, section-ids, periods, cycle, and availaibilities of each class in order of availability
 # if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
-
-
+# same for special cases like normal bio, chem, and physics, 
 def returnListofAvailability(student_request, course_info):
-    biology = False
-    chemistry = False
-    physics = False
-
     availability = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = student_request["Course"+str(i)]
@@ -47,16 +41,13 @@ def returnListofAvailability(student_request, course_info):
         found_courses.sort(key=lambda L: L[0], reverse=True)# check for doubles
         if (classcode in special_doubles):  # messed up special case
             ind = special_doubles.index(classcode)
-            if (ind == 0 and not biology):
-                biology = True
+            if (ind == 0): # bio class
                 found_courses.extend(sectionsFromCourseCode(special_doubles[1], course_info))
                 found_courses.extend(sectionsFromCourseCode(special_doubles[2], course_info))
-            elif (ind == 3 and not chemistry):
-                chemistry = True
+            elif (ind == 3): # chem class
                 found_courses.extend(sectionsFromCourseCode(special_doubles[4], course_info))
                 found_courses.extend(sectionsFromCourseCode(special_doubles[5], course_info))
-            elif (ind == 6 and not physics):
-                physics = True
+            elif (ind == 6): # physics class
                 found_courses.extend(sectionsFromCourseCode(special_doubles[7], course_info))
                 found_courses.extend(sectionsFromCourseCode(special_doubles[8], course_info))
             if (ind in [0, 3, 6]):
