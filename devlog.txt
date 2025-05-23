@@ -85,6 +85,10 @@ andyS -- 2025-05-15 1:44
   - fixed error with duplicate classes
   - current error with course code ZQPD1 having invalid cycle 00110
 
+andyS -- 2025-05-16 11:47
+  - edited task 1 printing
+  - avail bug fixed
+
 jadyL -- 2025-05-19 23:30
   - write doubles into availability
   - wrote cycleToNumber to reduce redundant code
@@ -101,9 +105,14 @@ jadyL -- 2025-05-20 11:46
 jadyL -- 2025-05-20 11:46
   - fix the broken code of yesterday
 
+andyS -- 2025-05-22 22:02
+  - fix formatting issues for doubles and halves, avail
+  - uploaded new design doc
+
+jadyL -- 2025-05-20 11:46
+  - clean up some of the old and unused code
+  - create function to change class_list as schedules are updated
+  - update todo list
+
 TODO:
-  - rewrite returnListofAvailability function to support singleton and class availability priority.
-  - make a half periods x.1 and make b half periods x.2
-  - replace NUM_OF_REQUESTED_CLASSES
-  - fix translate function(s?) to account for change in schedule format
-  - low priority: change periods out of strings
+  - get changeClassList to increment doubles (not a priority)
