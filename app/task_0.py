@@ -89,7 +89,7 @@ def returnListofAvailability(student_request, course_info):
         # sort by availability
         availablePds.sort(key=lambda L: L[3], reverse=True)
 
-        if len(found_courses) > 0 and len(availablePds) > 1:  # add sublist to full list
+        if len(found_courses) > 0 and len(availablePds) > 0:  # add sublist to full list
             availablePds.insert(0, classcode)
             # print(availablePds)
             availability.append(availablePds)
@@ -164,6 +164,7 @@ def availabilitySorter(availability):
 
 
 def checkSchedule(studentid, availability):
+    # print(availability)
     return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], [], [])
 
 # new recursive function that works for doubles and half periods, returning both scheduled classes and periods
@@ -171,7 +172,7 @@ def checkSchedule(studentid, availability):
 
 
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_sched, failed_classes, class_courses):
-    # print(current_class, schedule_so_far, working, max_sched, failed_classes)
+    # print(current_class, schedule_so_far, max_sched, failed_classes)
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
@@ -398,8 +399,6 @@ def formatListTotal():
 # print(formatListTotal())
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
-
-
 def formatListTotalClass():
     classArr = []
     twoArr = []
@@ -411,7 +410,6 @@ def formatListTotalClass():
             return ("No items in 2D array")
         for a in twoArr[2][3]:
             if a != "":
-                print(a)
                 if a[0].split("-")[0] in special_doubles:
                     for j in range(2):
                         strList = [student['StudentID']]
@@ -425,7 +423,16 @@ def formatListTotalClass():
                         str = ",".join(strList)
                         classArr.append(str)
                 elif type(a[1][2]) == tuple:
-                    print("wip")
+                    for j in range(2):
+                        strList = [student['StudentID']]
+                        strList.append(student['LastName'])
+                        strList.append(student['FirstName'])
+                        strList.append(student['SchoolYear'])
+                        strList.append(student['OffClass'])
+                        strList.append(a[0] + "-" + a[1][0])
+                        strList.append(a[1][1][j])
+                        str = ",".join(strList)
+                        classArr.append(str)
                 else:
                     strList = [student['StudentID']]
                     strList.append(student['LastName'])
@@ -434,11 +441,25 @@ def formatListTotalClass():
                     strList.append(student['OffClass'])
                     strList.append(a[0] + "-" + a[1][0])
                     strList.append(a[1][1])
-                    print(strList)
                     str = ",".join(strList)
                     classArr.append(str)
-    return (classArr)
+    return(classArr)
 
+# testing to see how many classes each student is scheduled with
+def showLens():
+    arr = formatListTotalClass()
+    arr2 = []
+    for i in range(1, 800):
+        arr2.append([str(i), 0])
+    print(arr2)
+    for a in arr:
+        print(a)
+        b = a.split(",")
+        temp = arr2[int(b[0]) - 1][1]
+        arr2[int(b[0]) - 1] = [b[0], temp + 1]
+    return sorted(arr2, key=lambda sublist: sublist[1])
+        
+print(showLens())
 
-print("\n", "Task 1:", formatListTotalClass(), "\n")
+# print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")

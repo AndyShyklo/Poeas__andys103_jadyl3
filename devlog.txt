@@ -85,6 +85,10 @@ andyS -- 2025-05-15 1:44
   - fixed error with duplicate classes
   - current error with course code ZQPD1 having invalid cycle 00110
 
+andyS -- 2025-05-16 11:47
+  - edited task 1 printing
+  - avail bug fixed
+
 jadyL -- 2025-05-19 23:30
   - write doubles into availability
   - wrote cycleToNumber to reduce redundant code
@@ -100,6 +104,10 @@ jadyL -- 2025-05-20 11:46
 
 jadyL -- 2025-05-20 11:46
   - fix the broken code of yesterday
+
+andyS -- 2025-05-22 22:02
+  - fix formatting issues for doubles and halves, avail
+  - uploaded new design doc
 
 TODO:
   - rewrite returnListofAvailability function to support singleton and class availability priority.
