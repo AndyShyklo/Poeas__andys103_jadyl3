@@ -117,33 +117,6 @@ def cycleToNumber(cycle):
     else:
         return cycle
 
-# old availability function. works but not with doubles, just single 11111 classes
-# works with updated recursive functions
-
-
-def returnListofAvailabilityOld(student_request, course_info):
-    availability = []
-    for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
-        classcode = student_request["Course"+str(i)]
-        # print(classcode, type(classcode), len(classcode), availability)
-        availablePds = []
-        if classcode != None:
-            if len(classcode) > 0:
-                for course in course_info:
-                    if course["CourseCode"] == classcode:
-                        if int(course["Capacity"]) > 0:
-                            if int(course["PeriodID"]) == 10:
-                                availablePds.append('0')
-                            else:
-                                availablePds.append(course["PeriodID"])
-                availability.append(availablePds)
-    # print(availability)
-    return availability
-
-# print(returnListofAvailabilityOld(student_requests[0], class_list))
-# print(returnListofAvailability(student_requests[0], class_list))
-
-
 def selectionSorter(availability):
     avail_temp = []
     count = 0
@@ -168,8 +141,6 @@ def checkSchedule(studentid, availability):
     return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], [], [])
 
 # new recursive function that works for doubles and half periods, returning both scheduled classes and periods
-# currently error with class code ZQPD1, which has cycle 00110???
-
 
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_sched, failed_classes, class_courses):
     # print(current_class, schedule_so_far, max_sched, failed_classes)
@@ -261,69 +232,18 @@ def cycleToDouble(cycle):
     elif cycle == 2:
         return 0.9
 
-# [1.0, 0.1, 0.9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-
-# ["StudentID" ["CourseCode", "SectionID", "Period"]]
-
-# test recursion function
-# print(student_schedules)
-
-
-# def organizeSchedule(schedule_so_far, class_courses):
-#     class_courses.sort(key=lambda L: int(L[1][1]), reverse=False)
-#     print(class_courses)
-#     for class in class_courses:
-#         if
-
-# translates the schedule into a readable
-def translateSchedule(schedule, student_req):
-    sched = {'1': "None", '2': "None", '3': "None", '4': "None", '5': "None",
-             '6': "None", '7': "None", '8': "None", '9': "None", '0': "None"}
-    # print(student_req["StudentID"])
-    for i in range(len(schedule)):
-        if schedule[i] != "-":
-            sched[schedule[i]] = student_req["Course"+str(i+1)]
-    return sched
-
-# print(translateSchedule(student_schedules[0]["100645728"], {'Course1': "geometry", 'Course2': "algebra 2", 'Course3': "precalc", 'Course4': "calc ab"}))
-
-# prints a created schedule or none, and creates for all students
-
-
-def createSchedules():
-    for student in student_requests:
-        osis = student['StudentID']
-        availability = returnListofAvailability(student, class_list)
-        # print(availability)
-        # print(checkSchedule(osis, availability))
-        sched = checkSchedule(osis, availability)
-        if (sched[0]):
-            print("hi")
-            # print(sched[1])
-            # print("Schedule:", translateSchedule(student_schedules[osis], student))
-            # print("YES schedule for " + osis)
-        else:
-            # print(sched)
-            fails = sched[1]
-            courseF = sched[2]
-            totalF = {}
-            for i in range(len(courseF)):
-                try:
-                    val = totalF[courseF[i]]
-                    # print("exists")
-                    val.append(fails[i])
-                except:
-                    # print("not exists")
-                    totalF[courseF[i]] = [fails[i]]
-            print("Scheduling failed at", list(totalF.keys()), ", but scheduled for", len(list(totalF.values())[
-                  0]), "iterations, with", len(list(totalF.values())[0][0]), "periods scheduled total, and with full dict:", totalF)
-            print("NO schedule for " + osis)
-
-# createSchedules()
+# updates class list based on a working schedule
+def updateClassList(sched, change):
+    print("updateclasslist")
+    sched_codes = [x[0] for x in sched]
+    sched_sections = [x[1][0] for x in sched]
+    for course in class_list:
+        if course['CourseCode'] in sched_codes:
+            ind = sched_codes.index(course['CourseCode'])
+            if course['SectionID'] == sched_sections[ind]:
+                course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
 
 # returns if a schedule works and that schedule, or if it fails, it returns where and what failed
-
-
 def createSchedule(student):
     osis = student['StudentID']
     availability = returnListofAvailability(student, class_list)
@@ -332,10 +252,11 @@ def createSchedule(student):
     sched = checkSchedule(osis, availability)
     if (sched[0]):
         # print(sched[1])
-        translated = translateSchedule(student_schedules[osis], student)
+        # translated = translateSchedule(student_schedules[osis], student)
         print("Schedule:", sched[1])
         print("Total List:", sched[3])
         print("YES schedule for " + osis)
+        updateClassList(sched[3], -1)
         return ([True, osis, sched])
     else:
         # print(sched)
@@ -355,6 +276,7 @@ def createSchedule(student):
         print("NO schedule for " + osis)
         return ([False, sched])
 
+createSchedule(student_requests[1])
 # prints an array of one student with schedules, or blank without schedules. courses are CourseID-SectionID
 
 
@@ -459,7 +381,7 @@ def showLens():
         arr2[int(b[0]) - 1] = [b[0], temp + 1]
     return sorted(arr2, key=lambda sublist: sublist[1])
         
-print(showLens())
+# print(showLens())
 
 # print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
