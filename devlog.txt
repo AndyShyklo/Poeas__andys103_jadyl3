@@ -114,5 +114,8 @@ jadyL -- 2025-05-20 11:46
   - create function to change class_list as schedules are updated
   - update todo list
 
+jadyL -- 2025-05-20 11:46
+  - list of osis numbers added to class list
+
 TODO:
   - get changeClassList to increment doubles (not a priority)

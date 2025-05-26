@@ -23,6 +23,7 @@ with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
 with open(CLASSES_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
     for row in document:
+        row['students'] = []
         class_list.append(row)
 
 # goes through the request and adds the section-ids for available classes in course info
@@ -233,7 +234,7 @@ def cycleToDouble(cycle):
         return 0.9
 
 # updates class list based on a working schedule
-def updateClassList(sched, change):
+def updateClassList(osis, sched, change):
     print("updateclasslist")
     sched_codes = [x[0] for x in sched]
     sched_sections = [x[1][0] for x in sched]
@@ -241,6 +242,10 @@ def updateClassList(sched, change):
         if course['CourseCode'] in sched_codes:
             ind = sched_codes.index(course['CourseCode'])
             if course['SectionID'] == sched_sections[ind]:
+                if change == -1:
+                    course['students'].append(osis)
+                elif change == 1:
+                    course['students'].remove(osis)
                 course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
 
 # returns if a schedule works and that schedule, or if it fails, it returns where and what failed
@@ -256,7 +261,7 @@ def createSchedule(student):
         print("Schedule:", sched[1])
         print("Total List:", sched[3])
         print("YES schedule for " + osis)
-        updateClassList(sched[3], -1)
+        updateClassList(osis, sched[3], -1)
         return ([True, osis, sched])
     else:
         # print(sched)
@@ -277,6 +282,9 @@ def createSchedule(student):
         return ([False, sched])
 
 createSchedule(student_requests[1])
+for course in class_list:
+    if len(course['students']) > 0:
+        print(course)
 # prints an array of one student with schedules, or blank without schedules. courses are CourseID-SectionID
 
 
