@@ -13,9 +13,9 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
-global temp_max_sched
-global temp_failed_classes
-global classArr
+temp_max_sched = 0
+temp_failed_classes = []
+classArr = []
 
 # reads student request csv into a list of dictionaries
 with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
@@ -149,7 +149,9 @@ def checkSchedule(studentid, availability):
 
 # new recursive function that works for doubles and half periods, returning both scheduled classes and periods
 def checkScheduleR(studentid, availability, current_class, schedule_so_far, class_courses):
-    print(current_class, schedule_so_far, temp_max_sched, temp_failed_classes)
+    global temp_max_sched
+    global temp_failed_classes
+    # print(current_class, schedule_so_far, temp_max_sched, temp_failed_classes)
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
@@ -159,12 +161,16 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
     # checks for max schedule reached, for first iteration
     if (temp_max_sched == 0) or (current_class > temp_max_sched):
         # erase later, seems to work decently, but can schedule last class and print valid max schedule
-        print("hi1")
         temp_max_sched = current_class
         temp_failed_classes = [availability[current_class]]
     # checks for max schedule reached, for all other iterations
     elif (current_class == temp_max_sched) and (availability[current_class] not in temp_failed_classes):
-        print("hi2")
+        print(availability[current_class][0])
+        print(temp_failed_classes[0])
+        try:
+            temp_failed_classes.pop(temp_failed_classes[0].index(availability[current_class][0]))
+        except:
+            print("not in list", availability[current_class][0])
         temp_failed_classes.append(availability[current_class])
     # general recursive sequence, for every case
     for i in range(1, len(availability[current_class])):
@@ -186,8 +192,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
             else:
                 class_courses_copy = class_courses.copy()
                 class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1,
-                                        comp, temp_max_sched, temp_failed_classes.copy(), class_courses_copy)
+                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
 
         else:  # non double case
             # print(pd, availability[current_class][0])
@@ -217,8 +222,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
             else:
                 class_courses_copy = class_courses.copy()
                 class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1,
-                                        comp, temp_max_sched, temp_failed_classes.copy(), class_courses_copy)
+                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
         # print(comp)
         # print(result)
         # print(pd)
@@ -332,8 +336,9 @@ def formatListTotal():
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
 def formatListTotalClass():
-    classArr = []
+    global classArr
     twoArr = []
+    failed_students = []
     # print(student_requests)
     for student in student_requests:
         twoArr = (createSchedule(student))
@@ -377,10 +382,12 @@ def formatListTotalClass():
                         str = ",".join(strList)
                         classArr.append(str)
         else:
+            failed_students.append(twoArr)
             print(twoArr[2][0])
     return(classArr)
 
 def listAllClass(osis, course):
+    global classArr
     studentsC = []
     for str in classArr:
         if str(osis) in str.split(","):
@@ -400,7 +407,7 @@ def showLens():
         temp = arr2[int(b[0]) - 1][1]
         arr2[int(b[0]) - 1] = [b[0], temp + 1]
     return sorted(arr2, key=lambda sublist: sublist[1])
-        
+
 # print(showLens())
 
 print("\n", "Task 1:", formatListTotalClass(), "\n")
