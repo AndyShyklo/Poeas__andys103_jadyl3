@@ -13,9 +13,11 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
+totalClassList = {}
 temp_max_sched = 0
 temp_failed_classes = []
 classArr = []
+temp_requests = []
 
 # reads student request csv into a list of dictionaries
 with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
@@ -134,15 +136,10 @@ def selectionSorter(availability):
                 avail_temp.append(item)
     return (avail_temp)
 
-
-def availabilitySorter(availability):
-    avail_temp = []
-
-temp_max_sched = 0
-temp_failed_classes = []
-
 # wrapper function, calls R with osis#, availability list, starting index, schedule array, the WIP schedule, the empty failed classes, and an empty assigned classes
 def checkSchedule(studentid, availability):
+    global temp_max_sched
+    global temp_failed_classes
     temp_max_sched = 0
     temp_failed_classes = []
     return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [])
@@ -165,8 +162,8 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
         temp_failed_classes = [availability[current_class]]
     # checks for max schedule reached, for all other iterations
     elif (current_class == temp_max_sched) and (availability[current_class] not in temp_failed_classes):
-        print(availability[current_class][0])
-        print(temp_failed_classes[0])
+        # print(availability[current_class][0])
+        # print(temp_failed_classes[0])
         try:
             temp_failed_classes.pop(temp_failed_classes[0].index(availability[current_class][0]))
         except:
@@ -268,24 +265,17 @@ def createSchedule(student):
         print("Total List:", sched[3])
         print("YES schedule for " + osis)
         updateClassList(osis, sched[3], -1)
+        totalClassList[osis] = sched[3]
         return ([True, osis, sched])
     else:
-        print(sched)
         fails = sched[1]
         courseF = sched[2]
-        totalF = {}
+        totalF = []
         for i in range(len(courseF)):
-            try:
-                val = totalF[courseF[i]]
-                # print("exists")
-                val.append(fails[i])
-            except:
-                # print("not exists")
-                totalF[courseF[0][i]] = [fails[i]]
-        print("Scheduling failed at", list(totalF.keys()), ", but scheduled for", len(list(totalF.values())[0]), "iterations, with", len(list(totalF.values())[
-              0][0]), "periods scheduled total, and with full dict:", totalF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
+            totalF.append(courseF[i][0])
+        print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
-        return ([False, sched])
+        return ([False, osis, sched, totalF])
 
 # createSchedule(student_requests[1])
 # for course in class_list:
@@ -337,61 +327,85 @@ def formatListTotal():
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
 def formatListTotalClass():
     global classArr
+    global student_requests
     twoArr = []
     failed_students = []
+    queue = student_requests.copy()
     # print(student_requests)
-    for student in student_requests:
+    while queue:
+        student = queue.pop(0)
         twoArr = (createSchedule(student))
         if twoArr[0]:
         # print(twoArr)
-            if len(twoArr) == 0:
-                return ("No items in 2D array")
-            for a in twoArr[2][3]:
-                if a != "":
-                    if a[0].split("-")[0] in special_doubles:
-                        for j in range(2):
-                            strList = [student['StudentID']]
-                            strList.append(student['LastName'])
-                            strList.append(student['FirstName'])
-                            strList.append(student['SchoolYear'])
-                            strList.append(student['OffClass'])
-                            i = special_doubles.index(a[0])
-                            strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
-                            strList.append(a[1][1][j])
-                            str = ",".join(strList)
-                            classArr.append(str)
-                    elif type(a[1][2]) == tuple:
-                        for j in range(2):
-                            strList = [student['StudentID']]
-                            strList.append(student['LastName'])
-                            strList.append(student['FirstName'])
-                            strList.append(student['SchoolYear'])
-                            strList.append(student['OffClass'])
-                            strList.append(a[0] + "-" + a[1][0])
-                            strList.append(a[1][1][j])
-                            str = ",".join(strList)
-                            classArr.append(str)
-                    else:
-                        strList = [student['StudentID']]
-                        strList.append(student['LastName'])
-                        strList.append(student['FirstName'])
-                        strList.append(student['SchoolYear'])
-                        strList.append(student['OffClass'])
-                        strList.append(a[0] + "-" + a[1][0])
-                        strList.append(a[1][1])
-                        str = ",".join(strList)
-                        classArr.append(str)
+            addClassArr(student, twoArr)
         else:
             failed_students.append(twoArr)
-            print(twoArr[2][0])
+            students = removeAllClass(twoArr[3][0])
+            for student2 in students:
+                if student2 not in queue:
+                    queue.append(student2)
+            print(twoArr)
+            if student not in queue:
+                queue.append(student)
+    # print(student_requests)
     return(classArr)
 
-def listAllClass(osis, course):
-    global classArr
+def addClassArr(student, twoArr):
+    if len(twoArr) == 0:
+        return ("No items in 2D array")
+    for a in twoArr[2][3]:
+        if a != "":
+            if a[0].split("-")[0] in special_doubles:
+                for j in range(2):
+                    strList = [student['StudentID']]
+                    strList.append(student['LastName'])
+                    strList.append(student['FirstName'])
+                    strList.append(student['SchoolYear'])
+                    strList.append(student['OffClass'])
+                    i = special_doubles.index(a[0])
+                    strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
+                    strList.append(a[1][1][j])
+                    str = ",".join(strList)
+                    classArr.append(str)
+            elif type(a[1][2]) == tuple:
+                for j in range(2):
+                    strList = [student['StudentID']]
+                    strList.append(student['LastName'])
+                    strList.append(student['FirstName'])
+                    strList.append(student['SchoolYear'])
+                    strList.append(student['OffClass'])
+                    strList.append(a[0] + "-" + a[1][0])
+                    strList.append(a[1][1][j])
+                    str = ",".join(strList)
+                    classArr.append(str)
+            else:
+                strList = [student['StudentID']]
+                strList.append(student['LastName'])
+                strList.append(student['FirstName'])
+                strList.append(student['SchoolYear'])
+                strList.append(student['OffClass'])
+                strList.append(a[0] + "-" + a[1][0])
+                strList.append(a[1][1])
+                str = ",".join(strList)
+                classArr.append(str)
+
+def removeAllClass(course):
+    osiss = listAllClass(course)
+    #use for 1/4th: (len(osiss) - len(osiss)/4)
+    for osis in osiss:
+        updateClassList(osis, totalClassList[osis], 1)
+    students = []
+    for student in student_requests:
+        if student['StudentID'] in osiss:
+            students.append(student)
+    return(students)
+
+def listAllClass(course):
     studentsC = []
-    for str in classArr:
-        if str(osis) in str.split(","):
-            studentsC.append(osis)
+    for dictClass in class_list:
+        if dictClass['CourseCode'] == course:
+            studentsC = dictClass['students']
+    print(studentsC)
     return(studentsC)
 
 # testing to see how many classes each student is scheduled with
@@ -410,5 +424,10 @@ def showLens():
 
 # print(showLens())
 
-print("\n", "Task 1:", formatListTotalClass(), "\n")
+formatListTotalClass()
+# print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
+
+['12', '23', '29', '50', '63', '85', '109', '127', '150', '161', '171', '190', '200', '210', '231', '252', '267', '278', '298', '340', '354', '383', '390', '413', '430', '448', '461']
+['2', '26', '40', '81', '91', '123', '140', '185', '206', '221', '258', '284', '304', '326', '349', '386', '403', '426', '451', '480', '498', '514', '525', '541', '557', '575', '580', '582', '595', '598', '622', '625', '631']
+['23', '50', '85', '127', '161', '190', '210', '252', '278', '340', '383', '413', '448', '752', '754', '755', '756', '757', '758', '759', '761', '762', '763', '764', '766', '767', '768']
