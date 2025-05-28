@@ -152,7 +152,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
-        student_schedules[studentid] = schedule_so_far
+        student_schedules[studentid] = class_courses
         # organizeSchedule(schedule_so_far, class_courses)
         return [True, temp_max_sched, temp_failed_classes, class_courses]
     # checks for max schedule reached, for first iteration
@@ -238,7 +238,7 @@ def cycleToDouble(cycle):
 
 # updates class list based on a working schedule
 def updateClassList(osis, sched, change):
-    print("updateclasslist")
+    print("updateclasslist", osis)
     sched_codes = [x[0] for x in sched]
     sched_sections = [x[1][0] for x in sched]
     for course in class_list:
@@ -325,16 +325,15 @@ def formatListTotal():
 # print(formatListTotal())
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
-def formatListTotalClass():
+def formatListTotalClass(studentArr):
     global classArr
-    global student_requests
     twoArr = []
     failed_students = []
-    queue = student_requests.copy()
     # print(student_requests)
-    while queue:
-        student = queue.pop(0)
+    for student in studentArr:
         twoArr = (createSchedule(student))
+        print(twoArr)
+        print(failed_students)
         if twoArr[0]:
         # print(twoArr)
             addClassArr(student, twoArr)
@@ -343,10 +342,11 @@ def formatListTotalClass():
             students = removeAllClass(twoArr[3][0])
             for student2 in students:
                 if student2 not in queue:
-                    queue.append(student2)
-            print(twoArr)
-            if student not in queue:
-                queue.append(student)
+                    failed_students.append(student2)
+            break
+    failed_students.append(studentArr[studentArr.index(failed_students[0]):])
+    if failed_students:
+        formatListTotalClass(failed_students)
     # print(student_requests)
     return(classArr)
 
@@ -391,9 +391,14 @@ def addClassArr(student, twoArr):
 
 def removeAllClass(course):
     osiss = listAllClass(course)
+    # print(osiss)
     #use for 1/4th: (len(osiss) - len(osiss)/4)
-    for osis in osiss:
-        updateClassList(osis, totalClassList[osis], 1)
+    # print(len(osiss))
+    osissLen = len(osiss)
+    for i in range(0, osissLen):
+        # print(osiss)
+        # print(osiss[0])
+        updateClassList(osiss[0], student_schedules[osiss[0]], 1)
     students = []
     for student in student_requests:
         if student['StudentID'] in osiss:
@@ -424,7 +429,7 @@ def showLens():
 
 # print(showLens())
 
-formatListTotalClass()
+formatListTotalClass(student_requests)
 # print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
 
