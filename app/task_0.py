@@ -13,6 +13,12 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
+totalClassList = {}
+temp_max_sched = 0
+temp_failed_classes = []
+classArr = []
+temp_requests = []
+
 # reads student request csv into a list of dictionaries
 with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
@@ -23,6 +29,7 @@ with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
 with open(CLASSES_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
     for row in document:
+        row['students'] = []
         class_list.append(row)
 
 # goes through the request and adds the course-code, section-ids, periods, cycle, and availaibilities of each class in order of availability
@@ -120,40 +127,39 @@ def selectionSorter(availability):
                 avail_temp.append(item)
     return (avail_temp)
 
-
-def availabilitySorter(availability):
-    avail_temp = []
-
 # wrapper function, calls R with osis#, availability list, starting index, schedule array, the WIP schedule, the empty failed classes, and an empty assigned classes
-
-
 def checkSchedule(studentid, availability):
-    # print(availability)
-    return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], [], [])
+    global temp_max_sched
+    global temp_failed_classes
+    temp_max_sched = 0
+    temp_failed_classes = []
+    return checkScheduleR(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [])
 
 # new recursive function that works for doubles and half periods, returning both scheduled classes and periods
-
-def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_sched, failed_classes, class_courses):
-    # print(current_class, schedule_so_far, max_sched, failed_classes)
+def checkScheduleR(studentid, availability, current_class, schedule_so_far, class_courses):
+    global temp_max_sched
+    global temp_failed_classes
+    # print(current_class, schedule_so_far, temp_max_sched, temp_failed_classes)
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
         student_schedules[studentid] = schedule_so_far
         # organizeSchedule(schedule_so_far, class_courses)
-        return [True, max_sched, failed_classes, class_courses]
+        return [True, temp_max_sched, temp_failed_classes, class_courses]
     # checks for max schedule reached, for first iteration
-    if (len(max_sched) == 0) or (len(schedule_so_far) > len(max_sched[0]) - 1):
-        max_sched.clear()
+    if (temp_max_sched == 0) or (current_class > temp_max_sched):
         # erase later, seems to work decently, but can schedule last class and print valid max schedule
-        failed_classes.clear()
-        max_sched.append(schedule_so_far)
-        tempE = f"Course{current_class + 1}, {availability[current_class]}"
-        failed_classes.append(tempE)
+        temp_max_sched = current_class
+        temp_failed_classes = [availability[current_class]]
     # checks for max schedule reached, for all other iterations
-    elif (len(schedule_so_far) == len(max_sched[0])):
-        max_sched.append(schedule_so_far)
-        tempE = f"Course{current_class + 1}, {availability[current_class]}"
-        failed_classes.append(tempE)
+    elif (current_class == temp_max_sched) and (availability[current_class] not in temp_failed_classes):
+        # print(availability[current_class][0])
+        # print(temp_failed_classes[0])
+        try:
+            temp_failed_classes.pop(temp_failed_classes[0].index(availability[current_class][0]))
+        except:
+            print("not in list", availability[current_class][0])
+        temp_failed_classes.append(availability[current_class])
     # general recursive sequence, for every case
     for i in range(1, len(availability[current_class])):
         pd = availability[current_class][i]
@@ -170,12 +176,11 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_
             elif 0.2 in comp:  # if 2 a days
                 comp = schedule_so_far
             if comp == schedule_so_far:
-                result = [False, max_sched, failed_classes, class_courses]
+                result = [False, temp_max_sched, temp_failed_classes, class_courses]
             else:
                 class_courses_copy = class_courses.copy()
                 class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1,
-                                        comp, max_sched, failed_classes.copy(), class_courses_copy)
+                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
 
         else:  # non double case
             # print(pd, availability[current_class][0])
@@ -201,18 +206,17 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, max_
                 if pd[2] == 1:
                     comp[int(pd[1])-1] += 0.1
             if comp == schedule_so_far:
-                result = [False, max_sched, failed_classes, class_courses]
+                result = [False, temp_max_sched, temp_failed_classes, class_courses]
             else:
                 class_courses_copy = class_courses.copy()
                 class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1,
-                                        comp, max_sched, failed_classes.copy(), class_courses_copy)
+                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
         # print(comp)
         # print(result)
         # print(pd)
         if result != None and result[0]:
             return result
-    return [False, max_sched, failed_classes, class_courses]
+    return [False, temp_max_sched, temp_failed_classes, class_courses]
 
 
 def cycleToDouble(cycle):
@@ -224,7 +228,7 @@ def cycleToDouble(cycle):
         return 0.9
 
 # updates class list based on a working schedule
-def updateClassList(sched, change):
+def updateClassList(osis, sched, change):
     print("updateclasslist")
     sched_codes = [x[0] for x in sched]
     sched_sections = [x[1][0] for x in sched]
@@ -232,6 +236,10 @@ def updateClassList(sched, change):
         if course['CourseCode'] in sched_codes:
             ind = sched_codes.index(course['CourseCode'])
             if course['SectionID'] == sched_sections[ind]:
+                if change == -1:
+                    course['students'].append(osis)
+                elif change == 1:
+                    course['students'].remove(osis)
                 course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
 
 # returns if a schedule works and that schedule, or if it fails, it returns where and what failed
@@ -247,27 +255,23 @@ def createSchedule(student):
         print("Schedule:", sched[1])
         print("Total List:", sched[3])
         print("YES schedule for " + osis)
-        updateClassList(sched[3], -1)
+        updateClassList(osis, sched[3], -1)
+        totalClassList[osis] = sched[3]
         return ([True, osis, sched])
     else:
-        # print(sched)
         fails = sched[1]
         courseF = sched[2]
-        totalF = {}
+        totalF = []
         for i in range(len(courseF)):
-            try:
-                val = totalF[courseF[i]]
-                # print("exists")
-                val.append(fails[i])
-            except:
-                # print("not exists")
-                totalF[courseF[i]] = [fails[i]]
-        print("Scheduling failed at", list(totalF.keys()), ", but scheduled for", len(list(totalF.values())[0]), "iterations, with", len(list(totalF.values())[
-              0][0]), "periods scheduled total, and with full dict:", totalF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
+            totalF.append(courseF[i][0])
+        print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
-        return ([False, sched])
+        return ([False, osis, sched, totalF])
 
-createSchedule(student_requests[1])
+# createSchedule(student_requests[1])
+# for course in class_list:
+#     if len(course['students']) > 0:
+#         print(course)
 # prints an array of one student with schedules, or blank without schedules. courses are CourseID-SectionID
 
 
@@ -313,50 +317,87 @@ def formatListTotal():
 
 # prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
 def formatListTotalClass():
-    classArr = []
+    global classArr
+    global student_requests
     twoArr = []
+    failed_students = []
+    queue = student_requests.copy()
     # print(student_requests)
-    for student in student_requests:
+    while queue:
+        student = queue.pop(0)
         twoArr = (createSchedule(student))
+        if twoArr[0]:
         # print(twoArr)
-        if len(twoArr) == 0:
-            return ("No items in 2D array")
-        for a in twoArr[2][3]:
-            if a != "":
-                if a[0].split("-")[0] in special_doubles:
-                    for j in range(2):
-                        strList = [student['StudentID']]
-                        strList.append(student['LastName'])
-                        strList.append(student['FirstName'])
-                        strList.append(student['SchoolYear'])
-                        strList.append(student['OffClass'])
-                        i = special_doubles.index(a[0])
-                        strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
-                        strList.append(a[1][1][j])
-                        str = ",".join(strList)
-                        classArr.append(str)
-                elif type(a[1][2]) == tuple:
-                    for j in range(2):
-                        strList = [student['StudentID']]
-                        strList.append(student['LastName'])
-                        strList.append(student['FirstName'])
-                        strList.append(student['SchoolYear'])
-                        strList.append(student['OffClass'])
-                        strList.append(a[0] + "-" + a[1][0])
-                        strList.append(a[1][1][j])
-                        str = ",".join(strList)
-                        classArr.append(str)
-                else:
+            addClassArr(student, twoArr)
+        else:
+            failed_students.append(twoArr)
+            students = removeAllClass(twoArr[3][0])
+            for student2 in students:
+                if student2 not in queue:
+                    queue.append(student2)
+            print(twoArr)
+            if student not in queue:
+                queue.append(student)
+    # print(student_requests)
+    return(classArr)
+
+def addClassArr(student, twoArr):
+    if len(twoArr) == 0:
+        return ("No items in 2D array")
+    for a in twoArr[2][3]:
+        if a != "":
+            if a[0].split("-")[0] in special_doubles:
+                for j in range(2):
+                    strList = [student['StudentID']]
+                    strList.append(student['LastName'])
+                    strList.append(student['FirstName'])
+                    strList.append(student['SchoolYear'])
+                    strList.append(student['OffClass'])
+                    i = special_doubles.index(a[0])
+                    strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
+                    strList.append(a[1][1][j])
+                    str = ",".join(strList)
+                    classArr.append(str)
+            elif type(a[1][2]) == tuple:
+                for j in range(2):
                     strList = [student['StudentID']]
                     strList.append(student['LastName'])
                     strList.append(student['FirstName'])
                     strList.append(student['SchoolYear'])
                     strList.append(student['OffClass'])
                     strList.append(a[0] + "-" + a[1][0])
-                    strList.append(a[1][1])
+                    strList.append(a[1][1][j])
                     str = ",".join(strList)
                     classArr.append(str)
-    return(classArr)
+            else:
+                strList = [student['StudentID']]
+                strList.append(student['LastName'])
+                strList.append(student['FirstName'])
+                strList.append(student['SchoolYear'])
+                strList.append(student['OffClass'])
+                strList.append(a[0] + "-" + a[1][0])
+                strList.append(a[1][1])
+                str = ",".join(strList)
+                classArr.append(str)
+
+def removeAllClass(course):
+    osiss = listAllClass(course)
+    #use for 1/4th: (len(osiss) - len(osiss)/4)
+    for osis in osiss:
+        updateClassList(osis, totalClassList[osis], 1)
+    students = []
+    for student in student_requests:
+        if student['StudentID'] in osiss:
+            students.append(student)
+    return(students)
+
+def listAllClass(course):
+    studentsC = []
+    for dictClass in class_list:
+        if dictClass['CourseCode'] == course:
+            studentsC = dictClass['students']
+    print(studentsC)
+    return(studentsC)
 
 # testing to see how many classes each student is scheduled with
 def showLens():
@@ -371,8 +412,13 @@ def showLens():
         temp = arr2[int(b[0]) - 1][1]
         arr2[int(b[0]) - 1] = [b[0], temp + 1]
     return sorted(arr2, key=lambda sublist: sublist[1])
-        
+
 # print(showLens())
 
+formatListTotalClass()
 # print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
+
+['12', '23', '29', '50', '63', '85', '109', '127', '150', '161', '171', '190', '200', '210', '231', '252', '267', '278', '298', '340', '354', '383', '390', '413', '430', '448', '461']
+['2', '26', '40', '81', '91', '123', '140', '185', '206', '221', '258', '284', '304', '326', '349', '386', '403', '426', '451', '480', '498', '514', '525', '541', '557', '575', '580', '582', '595', '598', '622', '625', '631']
+['23', '50', '85', '127', '161', '190', '210', '252', '278', '340', '383', '413', '448', '752', '754', '755', '756', '757', '758', '759', '761', '762', '763', '764', '766', '767', '768']
