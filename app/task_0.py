@@ -1,5 +1,6 @@
 import csv
 import math
+import random
 
 # StudentRequest-Sample2.csv     student_test.csv
 STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
@@ -8,6 +9,7 @@ STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
 student_requests = []
+student_requests_dictionary = {}
 student_schedules = {}
 class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
@@ -24,6 +26,7 @@ with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
     for row in document:
         student_requests.append(row)
+        student_requests_dictionary[row['StudentID']] = row
 
 # reads class list csv into a a list of dictionaries
 with open(CLASSES_FILE, newline='') as csvfile:
@@ -34,7 +37,7 @@ with open(CLASSES_FILE, newline='') as csvfile:
 
 # goes through the request and adds the course-code, section-ids, periods, cycle, and availaibilities of each class in order of availability
 # if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
-# same for special cases like normal bio, chem, and physics, 
+# same for special cases like normal bio, chem, and physics,
 def returnListofAvailability(student_request, course_info):
     availability = []
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
@@ -333,36 +336,43 @@ def formatListTotalClass(studentArr):
         if twoArr[0]:
         # print(twoArr)
             addClassArr(student, twoArr)
-        else:
-            failed_students.append(student)
-            print(twoArr[3][0])
-            students = removeAllClass(twoArr[3][0])
-            # print(students)
-            for student2 in students:
-                # print(student2, type(student2))
-                failed_students.append(student2)
-            break
+        while not twoArr[0]:
+            test_students = listAllClass(twoArr[3][0])
+            # failed_students.extend(removeAllClass(twoArr[3][0]))
+            random_student = random.randint(0, len(test_students) - 1)
+            updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
+            failed_students.append(student_requests_dictionary[test_students[random_student]])
+            twoArr = createSchedule(student)
+        # else:
+            # failed_students.append(student)
+            # print(twoArr[3][0])
+            # students = removeAllClass(twoArr[3][0])
+            # # print(students)
+            # for student2 in students:
+            #     # print(student2, type(student2))
+            #     failed_students.append(student2)
+            # break
     # print("hi", studentArr)
     # print("failed", failed_students[0])
     # print("class", class_list)
-    totalStudents = []
-    for student in studentArr:
-        totalStudents.append(student["StudentID"])
-    for goodClass in class_list:
-        for student in goodClass["students"]:
-            if student in totalStudents:
-                totalStudents.remove(student)
-    for student2 in totalStudents:
-        # print(student2, type(student2))
-        for studentArrTwo in studentArr:
-            if studentArrTwo.get("StudentID") == student2:
-                failed_students.append(studentArrTwo)
+    # totalStudents = []
+    # for student in studentArr:
+    #     totalStudents.append(student["StudentID"])
+    # for goodClass in class_list:
+    #     for student in goodClass["students"]:
+    #         if student in totalStudents:
+    #             totalStudents.remove(student)
+    # for student2 in totalStudents:
+    #     # print(student2, type(student2))
+    #     for studentArrTwo in studentArr:
+    #         if studentArrTwo.get("StudentID") == student2:
+    #             failed_students.append(studentArrTwo)
     if failed_students:
         # print(failed_students)
         formatListTotalClass(failed_students)
     return(classArr)
 
-# puts each response into a 
+# puts each response into a
 def addClassArr(student, twoArr):
     if len(twoArr) == 0:
         return ("No items in 2D array")
@@ -411,7 +421,7 @@ def removeAllClass(course):
     for i in range(0, osissLen):
         updateClassList(osiss2[i], student_schedules[osiss2[i]], 1)
     students = []
-    print(osiss2)
+    # print(osiss2)
     for student in student_requests:
         # print(student["StudentID"])
         if student['StudentID'] in osiss2:
@@ -423,26 +433,12 @@ def listAllClass(course):
     studentsC = []
     for dictClass in class_list:
         if dictClass.get('CourseCode') == course:
-            print(dictClass['students'])
+            # print(dictClass['students'])
             for student in dictClass['students']:
                 if student not in studentsC:
                     studentsC.append(student)
     # print(studentsC)
     return(studentsC)
-
-# testing to see how many classes each student is scheduled with
-def showLens():
-    arr = formatListTotalClass()
-    arr2 = []
-    for i in range(1, 800):
-        arr2.append([str(i), 0])
-    print(arr2)
-    for a in arr:
-        print(a)
-        b = a.split(",")
-        temp = arr2[int(b[0]) - 1][1]
-        arr2[int(b[0]) - 1] = [b[0], temp + 1]
-    return sorted(arr2, key=lambda sublist: sublist[1])
 
 # print(showLens())
 

@@ -117,5 +117,8 @@ jadyL -- 2025-05-20 11:46
 jadyL -- 2025-05-20 11:46
   - list of osis numbers added to class list
 
+jadyL -- 2025-05-29 11:46
+  - not to overreact, but it might be working
+
 TODO:
   - get changeClassList to increment doubles (not a priority)
