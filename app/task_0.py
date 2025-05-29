@@ -248,6 +248,8 @@ def updateClassList(osis, sched, change):
                 if change == -1:
                     course['students'].append(osis)
                 elif change == 1:
+                    print(course['students'])
+                    print(osis)
                     course['students'].remove(osis)
                 course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
 
@@ -275,6 +277,7 @@ def createSchedule(student):
             totalF.append(courseF[i][0])
         print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
+        print(sched)
         return ([False, osis, sched, totalF])
 
 # createSchedule(student_requests[1])
@@ -324,32 +327,51 @@ def formatListTotal():
 
 # print(formatListTotal())
 
-# prints array of strings each with one class, with the section and id, and the student assigned to it. fulfills task 1. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
+# recursive function with student requests each time. adds all unscheduled students to failed students list and then re-runs to prioritize the failed class. OUTPUT: [[123456789,SMITH,JOHN,09,1AA,E1,1], ...]
+# issue now is that when it runs, it doesnt seem to want to stop, which might mean we have an error or bad logic (both possible)
+# sometimes error at user 752 again, but its not in the list, may need to always prioritize him, as he fails first
 def formatListTotalClass(studentArr):
     global classArr
+    # print(studentArr)
     twoArr = []
     failed_students = []
-    # print(student_requests)
     for student in studentArr:
         twoArr = (createSchedule(student))
-        print(twoArr)
-        print(failed_students)
+        # print(twoArr)
+        # print(failed_students)
         if twoArr[0]:
         # print(twoArr)
             addClassArr(student, twoArr)
         else:
-            failed_students.append(twoArr)
+            failed_students.append(student)
+            print(twoArr[3][0])
             students = removeAllClass(twoArr[3][0])
+            # print(students)
             for student2 in students:
-                if student2 not in queue:
-                    failed_students.append(student2)
+                # print(student2, type(student2))
+                failed_students.append(student2)
             break
-    failed_students.append(studentArr[studentArr.index(failed_students[0]):])
+    # print("hi", studentArr)
+    # print("failed", failed_students[0])
+    # print("class", class_list)
+    totalStudents = []
+    for student in studentArr:
+        totalStudents.append(student["StudentID"])
+    for goodClass in class_list:
+        for student in goodClass["students"]:
+            if student in totalStudents:
+                totalStudents.remove(student)
+    for student2 in totalStudents:
+        # print(student2, type(student2))
+        for studentArrTwo in studentArr:
+            if studentArrTwo.get("StudentID") == student2:
+                failed_students.append(studentArrTwo)
     if failed_students:
+        # print(failed_students)
         formatListTotalClass(failed_students)
-    # print(student_requests)
     return(classArr)
 
+# puts each response into a 
 def addClassArr(student, twoArr):
     if len(twoArr) == 0:
         return ("No items in 2D array")
@@ -389,28 +411,32 @@ def addClassArr(student, twoArr):
                 str = ",".join(strList)
                 classArr.append(str)
 
+# removes all (or some) students within one course,
 def removeAllClass(course):
     osiss = listAllClass(course)
-    # print(osiss)
-    #use for 1/4th: (len(osiss) - len(osiss)/4)
-    # print(len(osiss))
-    osissLen = len(osiss)
+    osiss2 = osiss.copy()
+    # osiss2 = osiss.copy()[int((len(osiss) - len(osiss)/10)):]
+    osissLen = len(osiss2)
     for i in range(0, osissLen):
-        # print(osiss)
-        # print(osiss[0])
-        updateClassList(osiss[0], student_schedules[osiss[0]], 1)
+        updateClassList(osiss2[i], student_schedules[osiss2[i]], 1)
     students = []
+    print(osiss2)
     for student in student_requests:
-        if student['StudentID'] in osiss:
+        # print(student["StudentID"])
+        if student['StudentID'] in osiss2:
             students.append(student)
     return(students)
 
+# lists all students that are in a class. used for removing students from a course
 def listAllClass(course):
     studentsC = []
     for dictClass in class_list:
-        if dictClass['CourseCode'] == course:
-            studentsC = dictClass['students']
-    print(studentsC)
+        if dictClass.get('CourseCode') == course:
+            print(dictClass['students'])
+            for student in dictClass['students']:
+                if student not in studentsC:
+                    studentsC.append(student)
+    # print(studentsC)
     return(studentsC)
 
 # testing to see how many classes each student is scheduled with
