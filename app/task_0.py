@@ -67,7 +67,6 @@ def returnListofAvailability(student_request, course_info):
                     avail2 = found_courses[2 * i + 1]
                     cycle1 = cycleToNumber(avail1[2])
                     cycle2 = cycleToNumber(avail2[2])
-                    print(avail1, avail2)
                     # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be).
                     if type(cycle1) is int and type(cycle2) is int and avail1[0] == avail2[0]:
                         availablePds.append(
@@ -341,11 +340,20 @@ def formatListTotalClass(studentArr):
             # failed_students.extend(removeAllClass(twoArr[3][0]))
             print(test_students)
             print(len(test_students))
-            print(random.randint(0, len(test_students) - 1))
-            random_student = random.randint(0, len(test_students) - 1)
-            updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
-            failed_students.append(student_requests_dictionary[test_students[random_student]])
-            twoArr = createSchedule(student)
+            if len(test_students) > 0:
+                print(random.randint(0, len(test_students) - 1))
+                random_student = random.randint(0, len(test_students) - 1)
+                updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
+                failed_students.append(student_requests_dictionary[test_students[random_student]])
+                twoArr = createSchedule(student)
+            else:
+                with open("demofile.txt", "a") as f:
+                    f.write(test_students, student, twoArr)
+                failed_students.clear()
+                newArr = student_requests
+                newArr.remove(student)
+                newArr.insert(0, student)
+                classArr = formatListTotalClass(newArr)
         # else:
             # failed_students.append(student)
             # print(twoArr[3][0])
@@ -450,7 +458,7 @@ def showLens():
     for classArr in arr:
         print(classArr)
         if len(classArr["students"]) > 0:
-            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]]) 
+            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]])
     arr2.sort(key=lambda x: int(x[3]))
     print(arr2)
     print(arr2[0][3], "hello")
