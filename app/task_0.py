@@ -67,8 +67,9 @@ def returnListofAvailability(student_request, course_info):
                     avail2 = found_courses[2 * i + 1]
                     cycle1 = cycleToNumber(avail1[2])
                     cycle2 = cycleToNumber(avail2[2])
+                    print(avail1, avail2)
                     # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be).
-                    if type(cycle1) is int and type(cycle2) is int:
+                    if type(cycle1) is int and type(cycle2) is int and avail1[0] == avail2[0]:
                         availablePds.append(
                             (avail1[0], (avail1[1], avail2[1]), (cycle1, cycle2), min(avail1[3], avail2[3])))
         # double case
@@ -242,7 +243,6 @@ def updateClassList(osis, sched, change):
                 if change == -1:
                     course['students'].append(osis)
                 elif change == 1:
-                    print(course['students'])
                     print(osis)
                     course['students'].remove(osis)
                 course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
@@ -339,6 +339,9 @@ def formatListTotalClass(studentArr):
         while not twoArr[0]:
             test_students = listAllClass(twoArr[3][0])
             # failed_students.extend(removeAllClass(twoArr[3][0]))
+            print(test_students)
+            print(len(test_students))
+            print(random.randint(0, len(test_students) - 1))
             random_student = random.randint(0, len(test_students) - 1)
             updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
             failed_students.append(student_requests_dictionary[test_students[random_student]])
@@ -440,12 +443,30 @@ def listAllClass(course):
     # print(studentsC)
     return(studentsC)
 
-# print(showLens())
+def showLens():
+    arr = class_list
+    print(arr)
+    arr2 = []
+    for classArr in arr:
+        print(classArr)
+        if len(classArr["students"]) > 0:
+            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]]) 
+    arr2.sort(key=lambda x: int(x[3]))
+    print(arr2)
+    print(arr2[0][3], "hello")
+    return(arr2)
+    # print(arr2)
+    # for a in arr:
+    #     print(a)
+    #     b = a.split(",")
+    #     temp = arr2[int(b[0]) - 1][1]
+    #     arr2[int(b[0]) - 1] = [b[0], temp + 1]
+    # return sorted(arr2, key=lambda sublist: sublist[1])
 
 formatListTotalClass(student_requests)
+showLens()
+# print(student_schedules)
+# for student in student_schedules.items():
+#     print(student, "\n")
 # print("\n", "Task 1:", formatListTotalClass(), "\n")
 # print("\n", "Task 2:", formatListTotal(), "\n")
-
-['12', '23', '29', '50', '63', '85', '109', '127', '150', '161', '171', '190', '200', '210', '231', '252', '267', '278', '298', '340', '354', '383', '390', '413', '430', '448', '461']
-['2', '26', '40', '81', '91', '123', '140', '185', '206', '221', '258', '284', '304', '326', '349', '386', '403', '426', '451', '480', '498', '514', '525', '541', '557', '575', '580', '582', '595', '598', '622', '625', '631']
-['23', '50', '85', '127', '161', '190', '210', '252', '278', '340', '383', '413', '448', '752', '754', '755', '756', '757', '758', '759', '761', '762', '763', '764', '766', '767', '768']
