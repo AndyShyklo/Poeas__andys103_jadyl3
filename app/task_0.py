@@ -51,25 +51,25 @@ def returnListofAvailability(student_request, course_info):
         found_courses.sort(key=lambda L: L[0], reverse=True)# check for doubles
         if (classcode in special_doubles):  # messed up special case
             ind = special_doubles.index(classcode)
+            initial_length=len(found_courses)
+            extra_courses=[]
             if (ind == 0): # bio class
-                found_courses.extend(sectionsFromCourseCode(special_doubles[1], course_info))
-                found_courses.extend(sectionsFromCourseCode(special_doubles[2], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[1], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[2], course_info))
             elif (ind == 3): # chem class
-                found_courses.extend(sectionsFromCourseCode(special_doubles[4], course_info))
-                found_courses.extend(sectionsFromCourseCode(special_doubles[5], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[4], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[5], course_info))
             elif (ind == 6): # physics class
-                found_courses.extend(sectionsFromCourseCode(special_doubles[7], course_info))
-                found_courses.extend(sectionsFromCourseCode(special_doubles[8], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[7], course_info))
+                extra_courses.extend(sectionsFromCourseCode(special_doubles[8], course_info))
             if (ind in [0, 3, 6]):
-                found_courses.sort(key=lambda L: L[0], reverse=True)
-                for i in range(int(len(found_courses) / 2)):
-                    avail1 = found_courses[2 * i]
-                    avail2 = found_courses[2 * i + 1]
+                for i in range(initial_length):
+                    avail1 = found_courses[i]
+                    avail2 = [x for x in extra_courses if x[0] == avail1[0]][0]
                     cycle1 = cycleToNumber(avail1[2])
                     cycle2 = cycleToNumber(avail2[2])
-                    print(avail1, avail2)
                     # adds section id, periods, cycles for the periods, and the lesser availability of the courses(which shouldn't be a problem but could be).
-                    if type(cycle1) is int and type(cycle2) is int and avail1[0] == avail2[0]:
+                    if type(cycle1) is int and type(cycle2) is int:
                         availablePds.append(
                             (avail1[0], (avail1[1], avail2[1]), (cycle1, cycle2), min(avail1[3], avail2[3])))
         # double case
@@ -93,7 +93,6 @@ def returnListofAvailability(student_request, course_info):
 
         if len(found_courses) > 0 and len(availablePds) > 0:  # add sublist to full list
             availablePds.insert(0, classcode)
-            # print(availablePds)
             availability.append(availablePds)
     availability.sort(key=len)
     return availability
@@ -157,8 +156,6 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
         temp_failed_classes = [availability[current_class]]
     # checks for max schedule reached, for all other iterations
     elif (current_class == temp_max_sched) and (availability[current_class] not in temp_failed_classes):
-        # print(availability[current_class][0])
-        # print(temp_failed_classes[0])
         try:
             temp_failed_classes.pop(temp_failed_classes[0].index(availability[current_class][0]))
         except:
@@ -187,26 +184,17 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
                 result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
 
         else:  # non double case
-            # print(pd, availability[current_class][0])
-            # print(availability[current_class])
             if comp[int(pd[1])-1] == 0.0:
-                # print("trace1")
-                # print(comp[int(pd[1])-1])
                 if pd[2] == 0:
-                    # print("trace4")
                     comp[int(pd[1])-1] += 1.0
                 elif pd[2] == 1:
                     comp[int(pd[1])-1] += 0.1
                 elif pd[2] == 2:
                     comp[int(pd[1])-1] += 0.9
             elif comp[int(pd[1])-1] == 0.1:
-                # print("trace2")
-                # print(comp[int(pd[1])-1])
                 if pd[2] == 2:
                     comp[int(pd[1])-1] += 0.9
             elif comp[int(pd[1])-1] == 0.9:
-                # print("trace3")
-                # print(comp[int(pd[1])-1])
                 if pd[2] == 1:
                     comp[int(pd[1])-1] += 0.1
             if comp == schedule_so_far:
@@ -215,9 +203,6 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
                 class_courses_copy = class_courses.copy()
                 class_courses_copy.append([availability[current_class][0], pd])
                 result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
-        # print(comp)
-        # print(result)
-        # print(pd)
         if result != None and result[0]:
             return result
     return [False, temp_max_sched, temp_failed_classes, class_courses]
@@ -233,7 +218,6 @@ def cycleToDouble(cycle):
 
 # updates class list based on a working schedule
 def updateClassList(osis, sched, change):
-    print("updateclasslist", osis)
     sched_codes = [x[0] for x in sched]
     sched_sections = [x[1][0] for x in sched]
     for course in class_list:
@@ -243,22 +227,17 @@ def updateClassList(osis, sched, change):
                 if change == -1:
                     course['students'].append(osis)
                 elif change == 1:
-                    print(osis)
                     course['students'].remove(osis)
                 course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
+    if change == 1:
+        student_schedules[osis] = []
 
 # returns if a schedule works and that schedule, or if it fails, it returns where and what failed
 def createSchedule(student):
     osis = student['StudentID']
     availability = returnListofAvailability(student, class_list)
-    # print(availability)
-    # print(checkSchedule(osis, availability))
     sched = checkSchedule(osis, availability)
     if (sched[0]):
-        # print(sched[1])
-        # translated = translateSchedule(student_schedules[osis], student)
-        print("Schedule:", sched[1])
-        print("Total List:", sched[3])
         print("YES schedule for " + osis)
         updateClassList(osis, sched[3], -1)
         totalClassList[osis] = sched[3]
@@ -269,18 +248,12 @@ def createSchedule(student):
         totalF = []
         for i in range(len(courseF)):
             totalF.append(courseF[i][0])
-        print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
+        # print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
-        print(sched)
+        # print(sched)
         return ([False, osis, sched, totalF])
 
-# createSchedule(student_requests[1])
-# for course in class_list:
-#     if len(course['students']) > 0:
-#         print(course)
 # prints an array of one student with schedules, or blank without schedules. courses are CourseID-SectionID
-
-
 def formatList(osis):
     student = None
     for stude in student_requests:
@@ -326,52 +299,31 @@ def formatListTotal():
 # sometimes error at user 752 again, but its not in the list, may need to always prioritize him, as he fails first
 def formatListTotalClass(studentArr):
     global classArr
-    # print(studentArr)
+    counter = 0
     twoArr = []
     failed_students = []
     for student in studentArr:
         twoArr = (createSchedule(student))
-        # print(twoArr)
-        # print(failed_students)
+        counter = 0
         if twoArr[0]:
-        # print(twoArr)
             addClassArr(student, twoArr)
-        while not twoArr[0]:
+        while (not twoArr[0]) and (counter < 20):
             test_students = listAllClass(twoArr[3][0])
-            # failed_students.extend(removeAllClass(twoArr[3][0]))
-            print(test_students)
-            print(len(test_students))
-            print(random.randint(0, len(test_students) - 1))
             random_student = random.randint(0, len(test_students) - 1)
             updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
             failed_students.append(student_requests_dictionary[test_students[random_student]])
             twoArr = createSchedule(student)
-        # else:
-            # failed_students.append(student)
-            # print(twoArr[3][0])
-            # students = removeAllClass(twoArr[3][0])
-            # # print(students)
-            # for student2 in students:
-            #     # print(student2, type(student2))
-            #     failed_students.append(student2)
-            # break
-    # print("hi", studentArr)
-    # print("failed", failed_students[0])
-    # print("class", class_list)
-    # totalStudents = []
-    # for student in studentArr:
-    #     totalStudents.append(student["StudentID"])
-    # for goodClass in class_list:
-    #     for student in goodClass["students"]:
-    #         if student in totalStudents:
-    #             totalStudents.remove(student)
-    # for student2 in totalStudents:
-    #     # print(student2, type(student2))
-    #     for studentArrTwo in studentArr:
-    #         if studentArrTwo.get("StudentID") == student2:
-    #             failed_students.append(studentArrTwo)
+            counter += 1
+        if counter >= 20:
+            print("restart")
+            restart = student_requests.copy()
+            restart.remove(student)
+            restart.insert(0, student)
+            for id in student_schedules:
+                if student_schedules[id]:
+                    updateClassList(id, student_schedules[id], 1)
+            return formatListTotalClass(restart)
     if failed_students:
-        # print(failed_students)
         formatListTotalClass(failed_students)
     return(classArr)
 
@@ -424,9 +376,7 @@ def removeAllClass(course):
     for i in range(0, osissLen):
         updateClassList(osiss2[i], student_schedules[osiss2[i]], 1)
     students = []
-    # print(osiss2)
     for student in student_requests:
-        # print(student["StudentID"])
         if student['StudentID'] in osiss2:
             students.append(student)
     return(students)
@@ -436,37 +386,12 @@ def listAllClass(course):
     studentsC = []
     for dictClass in class_list:
         if dictClass.get('CourseCode') == course:
-            # print(dictClass['students'])
             for student in dictClass['students']:
                 if student not in studentsC:
                     studentsC.append(student)
-    # print(studentsC)
     return(studentsC)
 
-def showLens():
-    arr = class_list
-    print(arr)
-    arr2 = []
-    for classArr in arr:
-        print(classArr)
-        if len(classArr["students"]) > 0:
-            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]]) 
-    arr2.sort(key=lambda x: int(x[3]))
-    print(arr2)
-    print(arr2[0][3], "hello")
-    return(arr2)
-    # print(arr2)
-    # for a in arr:
-    #     print(a)
-    #     b = a.split(",")
-    #     temp = arr2[int(b[0]) - 1][1]
-    #     arr2[int(b[0]) - 1] = [b[0], temp + 1]
-    # return sorted(arr2, key=lambda sublist: sublist[1])
-
 formatListTotalClass(student_requests)
-showLens()
-# print(student_schedules)
-# for student in student_schedules.items():
-#     print(student, "\n")
-# print("\n", "Task 1:", formatListTotalClass(), "\n")
-# print("\n", "Task 2:", formatListTotal(), "\n")
+for i in student_schedules:
+    if not student_schedules[i]:
+        print(i, student_schedules[i])
