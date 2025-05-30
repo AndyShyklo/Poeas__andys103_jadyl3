@@ -309,6 +309,9 @@ def formatListTotalClass(studentArr):
             addClassArr(student, twoArr)
         while (not twoArr[0]) and (counter < 20):
             test_students = listAllClass(twoArr[3][0])
+            if (len(test_students) <= 1):
+                counter = 24
+                break
             random_student = random.randint(0, len(test_students) - 1)
             updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
             failed_students.append(student_requests_dictionary[test_students[random_student]])
@@ -395,3 +398,5 @@ formatListTotalClass(student_requests)
 for i in student_schedules:
     if not student_schedules[i]:
         print(i, student_schedules[i])
+    else:
+        print(i)
