@@ -117,11 +117,29 @@ jadyL -- 2025-05-20 11:46
 jadyL -- 2025-05-20 11:46
   - list of osis numbers added to class list
 
+andyS -- 2025-05-27 11:48
+  - added functionality to recognize failed students with failed students
+  - max schedule reached and max failed class
+  - started unscheduler
+
+andyS -- 2025-05-28 3:02 and 11:47
+  - fixing rescheduling and unscheduling
+
+andyS -- 2025-05-29 9:26
+  - fixing rescheduling and adding recursion
+
 jadyL -- 2025-05-29 11:46
   - not to overreact, but it might be working
 
+andyS -- 2025-05-30 11:48
+  - somewhat fixed random error
+  - recursion works mostly?
+
 jadyL -- 2025-05-30 12:01
   - not to overreact, but its actually working!??!
+
+andyS -- 2025-06-01 23:11
+  - added standard deviation for class seating list
 
 TODO:
   - get changeClassList to increment doubles (not a priority)

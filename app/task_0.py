@@ -400,3 +400,60 @@ for i in student_schedules:
         print(i, student_schedules[i])
     else:
         print(i)
+
+def stdDevs():
+    arr = class_list
+    arr2 = []
+    for classArr in arr:
+        if len(classArr["students"]) > 0:
+            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]]) 
+    arr2.sort(key=lambda x: x[0])
+    print(arr2)
+    classDict = {}
+    for classArr in arr2:
+        if classArr[0] not in classDict:
+            classDict[classArr[0]] = []
+        classDict[classArr[0]].append(float(classArr[3]))
+    classDict2 = {}
+    for classArr in classDict.keys():
+        classDict2[classArr] = stdDev(classDict[classArr])
+        print("\n")
+        print("Class:", classArr, "\nStandard Dev:", classDict2[classArr])
+        print("Class empty seats", classDict[classArr])
+    print("\n")
+    return(classDict2)
+
+def stdDev(arr):
+    if len(arr) <= 1:
+        return("N/A")
+    meanSum = 0.0
+    for classArr in arr:
+        meanSum += classArr
+    mean = meanSum / len(arr)
+    stDev = 0.0
+    for classArr in arr:
+        stDev += ((classArr - mean) ** 2)
+    return(math.sqrt(stDev / (len(arr) - 1)))
+
+print(stdDevs())
+
+# worrysome (?) classes:
+# geometry - Class: MGS22QT
+# Standard Dev: 3.951491580945823
+# Class empty seats [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 12.0, 13.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.0, 5.0, 0.0, 0.0, 0.0]
+
+# music app - Class: UAS11
+# Standard Dev: 6.683312551921141
+# Class empty seats [14.0, 13.0, 5.0, 0.0]
+
+# swim gym - Class: PWS82QA
+# Standard Dev: 4.928053803045811
+# Class empty seats [7.0, 7.0, 16.0, 10.0, 19.0, 8.0, 7.0]
+
+# phys ed - Class: PPS82QB
+# Standard Dev: 4.955156044825574
+# Class empty seats [0.0, 0.0, 3.0, 5.0, 4.0, 1.0, 15.0, 1.0]
+
+# fr comp - Class: EES82QFC
+# Standard Dev: 2.72621680438591
+# Class empty seats [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 8.0, 8.0, 8.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
