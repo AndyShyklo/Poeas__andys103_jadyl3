@@ -3,12 +3,16 @@ import math
 import random
 
 # StudentRequest-Sample2.csv     student_test.csv
-STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
+# STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
+STUDENT_REQUEST_FILE = "one-fourth-requests.csv"
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
 student_requests = []
+# global last_reset
+global last_reset
+last_reset = []
 student_requests_dictionary = {}
 student_schedules = {}
 class_list = []
@@ -31,6 +35,7 @@ with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
     for row in document:
         student_requests.append(row)
+        last_reset.append(row)
         student_requests_dictionary[row['StudentID']] = row
 
 # reads class list csv into a a list of dictionaries
@@ -96,12 +101,15 @@ def returnListofAvailability(student_request, course_info):
         # sort by availability
         availablePds.sort(key=lambda L: L[3], reverse=True)
 
-        print(classcode)
-        print(availablePds, "\n", found_courses, "\n \n")
-
-        if len(found_courses) > 0 and len(availablePds) > 0:  # add sublist to full list
+        # print(classcode)
+        # print(availablePds, "\n", found_courses, "\n \n")
+        if classcode and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
             availablePds.insert(0, classcode)
             availability.append(availablePds)
+
+        # if len(found_courses) > 0 and len(availablePds) > 0:  # add sublist to full list
+        #     availablePds.insert(0, classcode)
+        #     availability.append(availablePds)
     availability.sort(key=len)
     return availability
 
@@ -110,14 +118,14 @@ def sectionsFromCourseCode(coursecode, course_info):
     found_courses = []
     for course in course_info:
         if course["CourseCode"] == coursecode:
-            if int(course["Remaining Capacity"]) > 0:
+            if (int(course["Remaining Capacity"]) > 0) or (coursecode[0:2] == "ZQ"):
                 found_courses.append([course["SectionID"], course["PeriodID"],
                                     course["Cycle Day"], int(course["Remaining Capacity"])])
     return found_courses
 
 
 def cycleToNumber(cycle):
-    if cycle == "11111":
+    if cycle in ["11111", "00110", "11000"]:
         return 0
     elif cycle == "10101":
         return 1
@@ -170,7 +178,7 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
             print("not in list", availability[current_class][0])
         temp_failed_classes.append(availability[current_class])
     # general recursive sequence, for every case
-    print(availability)
+    # print(availability)
     if len(availability[current_class]) > 1:
         for i in range(1, len(availability[current_class])):
             pd = availability[current_class][i]
@@ -241,7 +249,7 @@ def updateClassList(osis, sched, change):
                     course['students'].append(osis)
                 elif change == 1:
                     course['students'].remove(osis)
-                if course['CourseCode'] not in special_frees:
+                if course['CourseCode'][0:2] != "ZQ":
                     course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
     if change == 1:
         student_schedules[osis] = []
@@ -252,7 +260,7 @@ def createSchedule(student):
     availability = returnListofAvailability(student, class_list)
     sched = checkSchedule(osis, availability)
     if (sched[0]):
-        print("YES schedule for " + osis)
+        # print("YES schedule for " + osis)
         updateClassList(osis, sched[3], -1)
         totalClassList[osis] = sched[3]
         return ([True, osis, sched])
@@ -264,6 +272,7 @@ def createSchedule(student):
             totalF.append(courseF[i][0])
         # print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
         print("NO schedule for " + osis)
+        # print(availability)
         # print(sched)
         return ([False, osis, sched, totalF])
 
@@ -321,7 +330,7 @@ def formatListTotalClass(studentArr):
         counter = 0
         if twoArr[0]:
             addClassArr(student, twoArr)
-        while (not twoArr[0]) and (counter < 20):
+        while (not twoArr[0]) and (counter < 3):
             test_students = listAllClass(twoArr[3][0])
             if (len(test_students) <= 1):
                 counter = 24
@@ -331,16 +340,19 @@ def formatListTotalClass(studentArr):
             failed_students.append(student_requests_dictionary[test_students[random_student]])
             twoArr = createSchedule(student)
             counter += 1
-        if counter >= 20:
+        if counter >= 3 and not twoArr[0]:
             print("restart")
-            restart = student_requests.copy()
+            global last_reset
+            restart = last_reset.copy()
             restart.remove(student)
             restart.insert(0, student)
+            last_reset = restart
             for id in student_schedules:
                 if student_schedules[id]:
                     updateClassList(id, student_schedules[id], 1)
             return formatListTotalClass(restart)
     if failed_students:
+        print("=================================================================================================", len(failed_students))
         formatListTotalClass(failed_students)
     return(classArr)
 
@@ -450,6 +462,10 @@ def stdDev(arr):
     return(math.sqrt(stDev / (len(arr) - 1)))
 
 print(stdDevs())
+with open("schedules.txt", "w") as f:
+    f.write(str(student_schedules))
+with open("classes.txt", "w") as f:
+    f.write(str(class_list))
 
 # worrysome (?) classes:
 # geometry - Class: MGS22QT
