@@ -9,10 +9,12 @@ STUDENT_REQUEST_FILE = "one-fourth-requests.csv"
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
+RESET_NUM = 10
 student_requests = []
 # global last_reset
 global last_reset
 last_reset = []
+problem_children = []
 student_requests_dictionary = {}
 student_schedules = {}
 class_list = []
@@ -44,6 +46,24 @@ with open(CLASSES_FILE, newline='') as csvfile:
     for row in document:
         row['students'] = []
         class_list.append(row)
+
+# copy_of_requests = student_requests.copy()
+copy_of_requests = []
+for request in student_requests:
+    messedUP = False
+    for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
+        classcode = request["Course"+str(i)]
+        if classcode in special_frees:
+            messedUP = True
+    if messedUP:
+        copy_of_requests.insert(0, request)
+    else:
+        copy_of_requests.append(request)
+            # copy_of_requests.remove(request)
+            # copy_of_requests.insert(0, request)
+student_requests = copy_of_requests
+# for request in student_requests:
+#     print(request['StudentID'])
 
 # goes through the request and adds the course-code, section-ids, periods, cycle, and availaibilities of each class in order of availability
 # if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
@@ -330,19 +350,29 @@ def formatListTotalClass(studentArr):
         counter = 0
         if twoArr[0]:
             addClassArr(student, twoArr)
-        while (not twoArr[0]) and (counter < 3):
+        while (not twoArr[0]) and (counter < RESET_NUM):
             test_students = listAllClass(twoArr[3][0])
             if (len(test_students) <= 1):
-                counter = 24
+                counter = RESET_NUM + 2
                 break
             random_student = random.randint(0, len(test_students) - 1)
+            # secondcounter = len(test_students)
+            while test_students[random_student] in problem_children:  
+                print("problem child located") 
+                test_students.pop(random_student)
+                if (len(test_students) <= 1):
+                    counter = RESET_NUM + 2
+                    break
+                random_student = random.randint(0, len(test_students) - 1)
             updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
             failed_students.append(student_requests_dictionary[test_students[random_student]])
             twoArr = createSchedule(student)
             counter += 1
-        if counter >= 3 and not twoArr[0]:
+        if counter >= RESET_NUM and not twoArr[0]:
             print("restart")
             global last_reset
+            # global problem_children
+            problem_children.append(student["StudentID"])
             restart = last_reset.copy()
             restart.remove(student)
             restart.insert(0, student)
