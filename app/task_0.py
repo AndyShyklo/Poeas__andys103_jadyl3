@@ -15,6 +15,11 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
+special_frees = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
+                 'ZQFA1', 'ZQFA2', 'ZQFA3', 'ZQFA4', 'ZQFA5', 'ZQFA6', 'ZQFA7', 'ZQFA8', 'ZQFA9',
+                 'ZQFB1', 'ZQFB2', 'ZQFB3', 'ZQFB4', 'ZQFB5', 'ZQFB6', 'ZQFB7', 'ZQFB8', 'ZQFB9',
+                 'ZQHALL', 'ZQT10', 'ZT10']
+
 totalClassList = {}
 temp_max_sched = 0
 temp_failed_classes = []
@@ -91,6 +96,9 @@ def returnListofAvailability(student_request, course_info):
         # sort by availability
         availablePds.sort(key=lambda L: L[3], reverse=True)
 
+        print(classcode)
+        print(availablePds, "\n", found_courses, "\n \n")
+
         if len(found_courses) > 0 and len(availablePds) > 0:  # add sublist to full list
             availablePds.insert(0, classcode)
             availability.append(availablePds)
@@ -162,49 +170,54 @@ def checkScheduleR(studentid, availability, current_class, schedule_so_far, clas
             print("not in list", availability[current_class][0])
         temp_failed_classes.append(availability[current_class])
     # general recursive sequence, for every case
-    for i in range(1, len(availability[current_class])):
-        pd = availability[current_class][i]
-        comp = schedule_so_far.copy()
-        if (type(pd[1]) is not str) and len(pd[1]) > 1:  # double case
-            pd1 = pd[1][0]
-            pd1cycle = pd[2][0]
-            pd2 = pd[1][1]
-            pd2cycle = pd[2][1]
-            comp[int(pd1)-1] += cycleToDouble(pd1cycle)
-            comp[int(pd2)-1] += cycleToDouble(pd2cycle)
-            if max(comp) > 1:  # if 2 b days or a or b on full period
-                comp = schedule_so_far
-            elif 0.2 in comp:  # if 2 a days
-                comp = schedule_so_far
-            if comp == schedule_so_far:
-                result = [False, temp_max_sched, temp_failed_classes, class_courses]
-            else:
-                class_courses_copy = class_courses.copy()
-                class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
+    print(availability)
+    if len(availability[current_class]) > 1:
+        for i in range(1, len(availability[current_class])):
+            pd = availability[current_class][i]
+            comp = schedule_so_far.copy()
+            if (type(pd[1]) is not str) and len(pd[1]) > 1:  # double case
+                pd1 = pd[1][0]
+                pd1cycle = pd[2][0]
+                pd2 = pd[1][1]
+                pd2cycle = pd[2][1]
+                comp[int(pd1)-1] += cycleToDouble(pd1cycle)
+                comp[int(pd2)-1] += cycleToDouble(pd2cycle)
+                if max(comp) > 1:  # if 2 b days or a or b on full period
+                    comp = schedule_so_far
+                elif 0.2 in comp:  # if 2 a days
+                    comp = schedule_so_far
+                if comp == schedule_so_far:
+                    result = [False, temp_max_sched, temp_failed_classes, class_courses]
+                else:
+                    class_courses_copy = class_courses.copy()
+                    class_courses_copy.append([availability[current_class][0], pd])
+                    result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
 
-        else:  # non double case
-            if comp[int(pd[1])-1] == 0.0:
-                if pd[2] == 0:
-                    comp[int(pd[1])-1] += 1.0
-                elif pd[2] == 1:
-                    comp[int(pd[1])-1] += 0.1
-                elif pd[2] == 2:
-                    comp[int(pd[1])-1] += 0.9
-            elif comp[int(pd[1])-1] == 0.1:
-                if pd[2] == 2:
-                    comp[int(pd[1])-1] += 0.9
-            elif comp[int(pd[1])-1] == 0.9:
-                if pd[2] == 1:
-                    comp[int(pd[1])-1] += 0.1
-            if comp == schedule_so_far:
-                result = [False, temp_max_sched, temp_failed_classes, class_courses]
-            else:
-                class_courses_copy = class_courses.copy()
-                class_courses_copy.append([availability[current_class][0], pd])
-                result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
-        if result != None and result[0]:
-            return result
+            else:  # non double case
+                if comp[int(pd[1])-1] == 0.0:
+                    if pd[2] == 0:
+                        comp[int(pd[1])-1] += 1.0
+                    elif pd[2] == 1:
+                        comp[int(pd[1])-1] += 0.1
+                    elif pd[2] == 2:
+                        comp[int(pd[1])-1] += 0.9
+                elif comp[int(pd[1])-1] == 0.1:
+                    if pd[2] == 2:
+                        comp[int(pd[1])-1] += 0.9
+                elif comp[int(pd[1])-1] == 0.9:
+                    if pd[2] == 1:
+                        comp[int(pd[1])-1] += 0.1
+                if comp == schedule_so_far:
+                    result = [False, temp_max_sched, temp_failed_classes, class_courses]
+                else:
+                    class_courses_copy = class_courses.copy()
+                    class_courses_copy.append([availability[current_class][0], pd])
+                    result = checkScheduleR(studentid, availability, current_class+1, comp, class_courses_copy)
+            if result != None and result[0]:
+                return result
+    else:
+        print("student couldnt be scheduled since no classes for availability")
+        return [False, temp_max_sched, temp_failed_classes, class_courses]
     return [False, temp_max_sched, temp_failed_classes, class_courses]
 
 
@@ -228,7 +241,8 @@ def updateClassList(osis, sched, change):
                     course['students'].append(osis)
                 elif change == 1:
                     course['students'].remove(osis)
-                course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
+                if course['CourseCode'] not in special_frees:
+                    course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
     if change == 1:
         student_schedules[osis] = []
 
