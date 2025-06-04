@@ -9,7 +9,7 @@ STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
-RESET_NUM = 100
+RESET_NUM = 15
 student_requests = []
 # global last_reset
 global last_reset
@@ -132,7 +132,7 @@ def returnListofAvailability(student_request, course_info):
 
         # print(classcode)
         # print(availablePds, "\n", found_courses, "\n \n")
-        if classcode and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
+        if classcode and (classcode[0:2] != "ZQ") and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
             if len(availablePds) == 0:
                 print("EMPTY SECTION ", classcode)
             availablePds.insert(0, classcode)
@@ -365,28 +365,28 @@ def formatListTotalClass(studentArr):
             addClassArr(student, twoArr)
         while (not twoArr[0]) and (counter < RESET_NUM):
             test_students = listAllClass(twoArr[3][0])
-            if len(test_students) == 0:
-                counter = RESET_NUM + 2
-                break
-            # print("sort by difficulty:")
-            test_students.sort(key=lambda L: L['difficulty'], reverse=False)
-            to_unschedule = test_students[0]
-            # if (len(test_students) <= 1):
+            # if len(test_students) == 0:
             #     counter = RESET_NUM + 2
             #     break
-            # random_student = random.randint(0, len(test_students) - 1)
-            # secondcounter = len(test_students)
-            # while test_students[random_student] in problem_children:
-            #     print("problem child located")
-            #     test_students.pop(random_student)
-            #     if (len(test_students) <= 1):
-            #         counter = RESET_NUM + 2
-            #         break
-            #     random_student = random.randint(0, len(test_students) - 1)
-            updateClassList(to_unschedule['StudentID'], student_schedules[to_unschedule['StudentID']], 1)
-            failed_students.append(to_unschedule)
-            # updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
-            # failed_students.append(student_requests_dictionary[test_students[random_student]])
+            # print("sort by difficulty:")
+            # test_students.sort(key=lambda L: L['difficulty'], reverse=False)
+            # to_unschedule = test_students[0]
+            if (len(test_students) <= 1):
+                counter = RESET_NUM + 2
+                break
+            random_student = random.randint(0, len(test_students) - 1)
+            secondcounter = len(test_students)
+            while test_students[random_student] in problem_children:
+                print("problem child located")
+                test_students.pop(random_student)
+                if (len(test_students) <= 1):
+                    counter = RESET_NUM + 2
+                    break
+                random_student = random.randint(0, len(test_students) - 1)
+            # updateClassList(to_unschedule['StudentID'], student_schedules[to_unschedule['StudentID']], 1)
+            # failed_students.append(to_unschedule)
+            updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
+            failed_students.append(student_requests_dictionary[test_students[random_student]])
             twoArr = createSchedule(student)
             counter += 1
         if counter >= RESET_NUM and not twoArr[0]:
@@ -473,15 +473,15 @@ def removeAllClass(course):
 # lists all students that are in a class. used for removing students from a course
 def listAllClass(course):
     studentsC = []
-    students = []
+    # students = []
     for dictClass in class_list:
         if dictClass.get('CourseCode') == course:
             for student in dictClass['students']:
                 if student not in studentsC:
                     studentsC.append(student)
-    for student in studentsC:
-        students.append(student_requests_dictionary[student])
-    return(students)
+    # for student in studentsC:
+    #     students.append(student_requests_dictionary[student])
+    return(studentsC)
 
 formatListTotalClass(student_requests)
 for i in student_schedules:
