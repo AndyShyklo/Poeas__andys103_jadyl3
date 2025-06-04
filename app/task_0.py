@@ -9,7 +9,7 @@ STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
-RESET_NUM = 50
+RESET_NUM = 100
 student_requests = []
 # global last_reset
 global last_reset
@@ -21,7 +21,7 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
-# singletons = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
+# singletons = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10',
 #                  'ZQFA1', 'ZQFA2', 'ZQFA3', 'ZQFA4', 'ZQFA5', 'ZQFA6', 'ZQFA7', 'ZQFA8', 'ZQFA9',
 #                  'ZQFB1', 'ZQFB2', 'ZQFB3', 'ZQFB4', 'ZQFB5', 'ZQFB6', 'ZQFB7', 'ZQFB8', 'ZQFB9',
 #                  'ZQHALL', 'ZQT10', 'ZT10', 'UDS11Q8']
@@ -49,19 +49,18 @@ with open(CLASSES_FILE, newline='') as csvfile:
         row['students'] = []
         class_list.append(row)
 
-# courses_to_num_of_sections = {}
-# for course in class_list:
-#     if courses_to_num_of_sections.get(course["CourseCode"]):
-#         courses_to_num_of_sections[course["CourseCode"]] +=1
-#     else:
-#         courses_to_num_of_sections[course["CourseCode"]] = 1
-# singletons = [x for x in courses_to_num_of_sections if courses_to_num_of_sections[x] == 1]
+# search for courses with only one section
+courses_to_num_of_sections = {}
+for course in class_list:
+    if courses_to_num_of_sections.get(course["CourseCode"]):
+        courses_to_num_of_sections[course["CourseCode"]] +=1
+    else:
+        courses_to_num_of_sections[course["CourseCode"]] = 1
+singletons = [x for x in courses_to_num_of_sections if courses_to_num_of_sections[x] == 1]
 # print(singletons)
 
-# copy_of_requests = student_requests.copy()
-# copy_of_requests = []
+# sort requests by difficulty to schedule based on amount of single section classes and how many classes there are
 for request in student_requests:
-    # messedUP = False
     num_requests = 0
     counter = 0
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
@@ -69,21 +68,11 @@ for request in student_requests:
         if classcode:
             num_requests += 1
         if classcode in singletons:
-            # messedUP = True
             counter += 1
-    # if messedUP:
-    #     copy_of_requests.insert(0, request)
-    # else:
-    #     copy_of_requests.append(request)
-            # copy_of_requests.remove(request)
-            # copy_of_requests.insert(0, request)
-    request['difficulty'] = counter + (num_requests % 10 * 2)
+    request['difficulty'] = counter + (num_requests / 10 * 2)
     # request['difficulty'] = counter
 student_requests.sort(key=lambda L: L['difficulty'], reverse=True)
 last_reset.sort(key=lambda L: L['difficulty'], reverse=True)
-# student_requests = copy_of_requests
-# for request in student_requests:
-#     print(request['StudentID'])
 
 # goes through the request and adds the course-code, section-ids, periods, cycle, and availaibilities of each class in order of availability
 # if a course id and section id are the same, add a second list of same section/course id to the availability ex. calc bc double with same id
@@ -294,6 +283,7 @@ def updateClassList(osis, sched, change):
                 if course['CourseCode'][0:2] != "ZQ":
                     course['Remaining Capacity'] = str(int(course['Remaining Capacity']) + change)
     if change == 1:
+        # print("unscheduled a kid")
         student_schedules[osis] = []
 
 # returns if a schedule works and that schedule, or if it fails, it returns where and what failed
@@ -367,6 +357,7 @@ def formatListTotalClass(studentArr):
     counter = 0
     twoArr = []
     failed_students = []
+    minimum = len(studentArr)
     for student in studentArr:
         twoArr = (createSchedule(student))
         counter = 0
@@ -374,20 +365,28 @@ def formatListTotalClass(studentArr):
             addClassArr(student, twoArr)
         while (not twoArr[0]) and (counter < RESET_NUM):
             test_students = listAllClass(twoArr[3][0])
-            if (len(test_students) <= 1):
+            if len(test_students) == 0:
                 counter = RESET_NUM + 2
                 break
-            random_student = random.randint(0, len(test_students) - 1)
-            secondcounter = len(test_students)
-            while test_students[random_student] in problem_children:  
-                print("problem child located") 
-                test_students.pop(random_student)
-                if (len(test_students) <= 1):
-                    counter = RESET_NUM + 2
-                    break
-                random_student = random.randint(0, len(test_students) - 1)
-            updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
-            failed_students.append(student_requests_dictionary[test_students[random_student]])
+            # print("sort by difficulty:")
+            test_students.sort(key=lambda L: L['difficulty'], reverse=False)
+            to_unschedule = test_students[0]
+            # if (len(test_students) <= 1):
+            #     counter = RESET_NUM + 2
+            #     break
+            # random_student = random.randint(0, len(test_students) - 1)
+            # secondcounter = len(test_students)
+            # while test_students[random_student] in problem_children:
+            #     print("problem child located")
+            #     test_students.pop(random_student)
+            #     if (len(test_students) <= 1):
+            #         counter = RESET_NUM + 2
+            #         break
+            #     random_student = random.randint(0, len(test_students) - 1)
+            updateClassList(to_unschedule['StudentID'], student_schedules[to_unschedule['StudentID']], 1)
+            failed_students.append(to_unschedule)
+            # updateClassList(test_students[random_student], student_schedules[test_students[random_student]], 1)
+            # failed_students.append(student_requests_dictionary[test_students[random_student]])
             twoArr = createSchedule(student)
             counter += 1
         if counter >= RESET_NUM and not twoArr[0]:
@@ -402,9 +401,18 @@ def formatListTotalClass(studentArr):
             for id in student_schedules:
                 if student_schedules[id]:
                     updateClassList(id, student_schedules[id], 1)
+            for course in class_list:
+                if course['students']:
+                    course['students'] = []
             return formatListTotalClass(restart)
     if failed_students:
         print("=================================================================================================", len(failed_students))
+        if len(failed_students) < minimum:
+            minimum = len(failed_students)
+            with open("schedules.txt", "w") as f:
+                f.write(str(student_schedules))
+            with open("classes.txt", "w") as f:
+                f.write(str(class_list))
         formatListTotalClass(failed_students)
     return(classArr)
 
@@ -465,12 +473,15 @@ def removeAllClass(course):
 # lists all students that are in a class. used for removing students from a course
 def listAllClass(course):
     studentsC = []
+    students = []
     for dictClass in class_list:
         if dictClass.get('CourseCode') == course:
             for student in dictClass['students']:
                 if student not in studentsC:
                     studentsC.append(student)
-    return(studentsC)
+    for student in studentsC:
+        students.append(student_requests_dictionary[student])
+    return(students)
 
 formatListTotalClass(student_requests)
 for i in student_schedules:
@@ -484,7 +495,7 @@ def stdDevs():
     arr2 = []
     for classArr in arr:
         if len(classArr["students"]) > 0:
-            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]]) 
+            arr2.append([classArr["CourseCode"], classArr["SectionID"], classArr["Capacity"], classArr["Remaining Capacity"]])
     arr2.sort(key=lambda x: x[0])
     print(arr2)
     classDict = {}
