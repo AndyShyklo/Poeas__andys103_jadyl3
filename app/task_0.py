@@ -3,13 +3,13 @@ import math
 import random
 
 # StudentRequest-Sample2.csv     student_test.csv
-# STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
-STUDENT_REQUEST_FILE = "one-fourth-requests.csv"
+STUDENT_REQUEST_FILE = "StudentRequest-Sample2.csv"
+# STUDENT_REQUEST_FILE = "one-fourth-requests.csv"
 # 02M475,2024,2,799,,,,,EES88,FFS62,MPS22X,PPS88QA,SCS22,ZQ03,ZQ04,ZQ05,ZQ06,ZQ07,ZQ08,,,,
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
-RESET_NUM = 30
+RESET_NUM = 50
 student_requests = []
 # global last_reset
 global last_reset
@@ -21,11 +21,11 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
-singletons = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
-                 'ZQFA1', 'ZQFA2', 'ZQFA3', 'ZQFA4', 'ZQFA5', 'ZQFA6', 'ZQFA7', 'ZQFA8', 'ZQFA9',
-                 'ZQFB1', 'ZQFB2', 'ZQFB3', 'ZQFB4', 'ZQFB5', 'ZQFB6', 'ZQFB7', 'ZQFB8', 'ZQFB9',
-                 'ZQHALL', 'ZQT10', 'ZT10', 'UDS11Q8']
-# singletons = []
+# singletons = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
+#                  'ZQFA1', 'ZQFA2', 'ZQFA3', 'ZQFA4', 'ZQFA5', 'ZQFA6', 'ZQFA7', 'ZQFA8', 'ZQFA9',
+#                  'ZQFB1', 'ZQFB2', 'ZQFB3', 'ZQFB4', 'ZQFB5', 'ZQFB6', 'ZQFB7', 'ZQFB8', 'ZQFB9',
+#                  'ZQHALL', 'ZQT10', 'ZT10', 'UDS11Q8']
+singletons = []
 
 totalClassList = {}
 temp_max_sched = 0
@@ -37,6 +37,7 @@ temp_requests = []
 with open(STUDENT_REQUEST_FILE, newline='') as csvfile:
     document = csv.DictReader(csvfile)
     for row in document:
+        row['difficulty'] = 0
         student_requests.append(row)
         last_reset.append(row)
         student_requests_dictionary[row['StudentID']] = row
@@ -58,20 +59,29 @@ with open(CLASSES_FILE, newline='') as csvfile:
 # print(singletons)
 
 # copy_of_requests = student_requests.copy()
-copy_of_requests = []
+# copy_of_requests = []
 for request in student_requests:
-    messedUP = False
+    # messedUP = False
+    num_requests = 0
+    counter = 0
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = request["Course"+str(i)]
+        if classcode:
+            num_requests += 1
         if classcode in singletons:
-            messedUP = True
-    if messedUP:
-        copy_of_requests.insert(0, request)
-    else:
-        copy_of_requests.append(request)
+            # messedUP = True
+            counter += 1
+    # if messedUP:
+    #     copy_of_requests.insert(0, request)
+    # else:
+    #     copy_of_requests.append(request)
             # copy_of_requests.remove(request)
             # copy_of_requests.insert(0, request)
-student_requests = copy_of_requests
+    request['difficulty'] = counter + (num_requests % 10 * 2)
+    # request['difficulty'] = counter
+student_requests.sort(key=lambda L: L['difficulty'], reverse=True)
+last_reset.sort(key=lambda L: L['difficulty'], reverse=True)
+# student_requests = copy_of_requests
 # for request in student_requests:
 #     print(request['StudentID'])
 
@@ -368,7 +378,7 @@ def formatListTotalClass(studentArr):
                 counter = RESET_NUM + 2
                 break
             random_student = random.randint(0, len(test_students) - 1)
-            # secondcounter = len(test_students)
+            secondcounter = len(test_students)
             while test_students[random_student] in problem_children:  
                 print("problem child located") 
                 test_students.pop(random_student)
