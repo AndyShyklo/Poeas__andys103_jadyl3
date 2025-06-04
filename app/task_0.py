@@ -9,7 +9,7 @@ STUDENT_REQUEST_FILE = "one-fourth-requests.csv"
 # 02M475,2024,2,527,,,,,EES82QFC,FJS64,HGS42,MPS22XH,PHS11,PPS82QB,SBS22H,SBS44QLA,UZS32,ZLUN,,,,,
 CLASSES_FILE = "MasterSchedule.csv"
 NUM_OF_REQUESTED_CLASSES = 15
-RESET_NUM = 10
+RESET_NUM = 30
 student_requests = []
 # global last_reset
 global last_reset
@@ -21,10 +21,11 @@ class_list = []
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
-special_frees = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
+singletons = ['ZQ01', 'ZQ02', 'ZQ03', 'ZQ04', 'ZQ05', 'ZQ06', 'ZQ07', 'ZQ08', 'ZQ09', 'ZQ10', 
                  'ZQFA1', 'ZQFA2', 'ZQFA3', 'ZQFA4', 'ZQFA5', 'ZQFA6', 'ZQFA7', 'ZQFA8', 'ZQFA9',
                  'ZQFB1', 'ZQFB2', 'ZQFB3', 'ZQFB4', 'ZQFB5', 'ZQFB6', 'ZQFB7', 'ZQFB8', 'ZQFB9',
-                 'ZQHALL', 'ZQT10', 'ZT10']
+                 'ZQHALL', 'ZQT10', 'ZT10', 'UDS11Q8']
+# singletons = []
 
 totalClassList = {}
 temp_max_sched = 0
@@ -47,13 +48,22 @@ with open(CLASSES_FILE, newline='') as csvfile:
         row['students'] = []
         class_list.append(row)
 
+# courses_to_num_of_sections = {}
+# for course in class_list:
+#     if courses_to_num_of_sections.get(course["CourseCode"]):
+#         courses_to_num_of_sections[course["CourseCode"]] +=1
+#     else:
+#         courses_to_num_of_sections[course["CourseCode"]] = 1
+# singletons = [x for x in courses_to_num_of_sections if courses_to_num_of_sections[x] == 1]
+# print(singletons)
+
 # copy_of_requests = student_requests.copy()
 copy_of_requests = []
 for request in student_requests:
     messedUP = False
     for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
         classcode = request["Course"+str(i)]
-        if classcode in special_frees:
+        if classcode in singletons:
             messedUP = True
     if messedUP:
         copy_of_requests.insert(0, request)
@@ -124,6 +134,8 @@ def returnListofAvailability(student_request, course_info):
         # print(classcode)
         # print(availablePds, "\n", found_courses, "\n \n")
         if classcode and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
+            if len(availablePds) == 0:
+                print("EMPTY SECTION ", classcode)
             availablePds.insert(0, classcode)
             availability.append(availablePds)
 
@@ -291,7 +303,7 @@ def createSchedule(student):
         for i in range(len(courseF)):
             totalF.append(courseF[i][0])
         # print("Scheduling failed at", totalF, ", but scheduled for", fails, "iterations, with", fails, "periods scheduled total, and with full dict:", courseF, "\n \n Total class sections: ", sched[3], "\n \n Availability:", availability)
-        print("NO schedule for " + osis)
+        # print("NO schedule for " + osis)
         # print(availability)
         # print(sched)
         return ([False, osis, sched, totalF])
