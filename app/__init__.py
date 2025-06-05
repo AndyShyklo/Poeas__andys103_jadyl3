@@ -3,6 +3,7 @@ import os # Handle file path differences.
 
 #Custom Modules:
 from helper import *
+from formatter import *
 
 # default files for unix/windows
 STUDENT_REQUEST_FILE = os.path.normpath("data/StudentRequest-Sample2.csv")
@@ -32,18 +33,18 @@ def main():
     student_request_dictionary = student_requests[1]
 
     result = create_schedules(student_request_list, class_list, student_request_dictionary)
-    # formatted_schedules = format_schedules(result[0])
-    # formatted_class_roster = format_classes(result[1])
-    # return(formatted_schedules, formatted_class_roster)
-    return result
+    formatted_schedules = format_schedules(result[0])
+    formatted_class_roster = format_classes(result[1])
+    return(formatted_schedules, formatted_class_roster)
 
+# run function
 result = main()
-'''
+
 # Generated schedules and class rosters are written to files.
 with open(SCHEDULES_OUTPUT_FILE, "w") as f:
     f.write(result[0])
 with open(ROSTER_OUTPUT_FILE, "w") as f:
     f.write(result[1])
-'''
+
 # Notify user of program completion
 print("Program Complete.")

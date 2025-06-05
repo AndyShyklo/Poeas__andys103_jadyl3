@@ -65,7 +65,7 @@ def get_singletons(class_list):
     return[x for x in courses_to_num_of_sections if courses_to_num_of_sections[x] == 1]
 
 ''' sort requests based on difficulty to schedule.
-input: (class_list -> [dictionary, dictionary, ...], 
+input: (student_requests -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}], 
         singletons -> List of Dictionaries [{CourseCode: String, SectionID: String, ...}, {...}])
 output: student_requests -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}]
 '''
@@ -124,8 +124,7 @@ def cycleToDouble(cycle):
         return 0.9
 
 ''' return integer from a 'Cycle Day' from MasterSchedule. also checks for invalid classes
-input: (coursecode -> String,
-        class_list ->  List of Dictionaries [{CourseCode: String, SectionID: String, ...}, {...}])
+input: coursecode -> String
 output: cycle -> Integer (translation: 0 means all days, 1 means a days, 2 means b days)
 '''   
 def _list_all_class(coursecode):
@@ -245,11 +244,7 @@ def _check_schedule(studentid, availability):
 input: (student_request -> Dictionary {StudentID: String, Course1: String, ...},
         availability -> ~4D List [[CourseCode, (SectionID, PeriodID, ScheduleID, AvailableSeats), ...], ...],
         current_class -> Integer
-        schedule_so_far -> IntegerArray, tracks how full a schedule is based on assigned courses
-        class_courses -> [[classcode, [CourseCode, (SectionID, PeriodID, ScheduleID, AvailableSeats)]], ...]
-        temp_max_sched -> integer
-        temp_failed_classes -> [CourseCode, (SectionID, PeriodID, ScheduleID, AvailableSeats), ...]
-        )
+        schedule_so_far -> IntegerArray, tracks how full a schedule is based on assigned courses)
 output: [True/False, temp_max_sched, temp_failed_classes, class_courses]
 '''
 def _check_schedule_r(studentid, availability, current_class, schedule_so_far, class_courses):
@@ -359,13 +354,7 @@ def create_schedules(student_requests, class_list_in, student_requests_dictionar
     return _create_schedules_r(student_requests)
 
 ''' function to sort requests based on difficulty to schedule.
-input: (student_requests -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}],
-        student_requests_dictionary -> Dictionary {'1': [{StudentID: String, Course1: String, ...}], ...},
-        problem_children -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}],
-        failed_students -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}],
-        minimum -> integer, least amount of failed students, 
-        last_reset -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}]
-        )
+input: student_requests -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}]
 output: (student_schedules -> Dictionary {osis: [[course_code, (section_id -> String, period_id -> String, schedule -> integer, available_seats -> String)], ...], ...}, 
         class_list ->  List of Dictionaries [{CourseCode: String, SectionID: String, ...}, {...}])
 '''

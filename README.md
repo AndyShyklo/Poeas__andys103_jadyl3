@@ -57,7 +57,7 @@ cd PATH/TO/Poeas__andys103_jadyl3
 ```
  python3 __init__.py
 ```
-optionally with two elements
+optionally with 2 arguments. files need to be in app/data/
 ```
  python3 __init__.py <student_request_file_name> <master_schedule_file_name>
 ```
