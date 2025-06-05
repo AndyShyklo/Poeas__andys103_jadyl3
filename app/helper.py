@@ -8,6 +8,10 @@ NUM_OF_REQUESTED_CLASSES = 15 #student_requests have courses from Course1 to Cou
 RESET_NUM = 15
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
+half_zqs = ["ZQ01", "ZQ02", "ZQ03", "ZQ04", "ZQ05", "ZQ06", "ZQ07", "ZQ08", "ZQ09", "ZQ10", 
+            "ZQFA1", "ZQFA2", "ZQFA3", "ZQFA4", "ZQFA5", "ZQFA6", "ZQFA7", "ZQFA8", "ZQFA9",
+            "ZQFB1", "ZQFB2", "ZQFB3", "ZQFB4", "ZQFB5", "ZQFB6", "ZQFB7", "ZQFB8", "ZQFB9", 
+            "ZQHALL"]
 
 # essentially global variables
 student_schedules = {}
@@ -115,7 +119,7 @@ def _cycle_to_number(cycle):
 input: cycle -> Integer
 output: cycle -> Integer (translation: 1.0 means all days, 0.1 means a days, 0.9 means b days)
 '''
-def cycleToDouble(cycle):
+def _cycle_to_double(cycle):
     if cycle == 0:
         return 1.0
     elif cycle == 1:
@@ -194,7 +198,8 @@ def _return_list_of_availability(student_request, course_info):
                     availablePds.append((avail[0], avail[1], cycle, avail[3]))
         # sort by availability
         availablePds.sort(key=lambda L: L[3], reverse=True)
-        if classcode and (classcode[0:2] != "ZQ") and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
+        # ignore ZQs, lab courses, and the broken courses
+        if classcode and (classcode not in half_zqs) and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
             if len(availablePds) == 0:
                 print("EMPTY SECTION ", classcode)
             availablePds.insert(0, classcode)
@@ -253,6 +258,22 @@ def _check_schedule_r(studentid, availability, current_class, schedule_so_far, c
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
+        # adding zq free course codes back to a schedule
+        zqs = [x for x in class_list if x['CourseCode'][0:2] == "ZQ"]
+        zq = []
+        for i in range(len(schedule_so_far)):
+            status = schedule_so_far[i]
+            if status == 0:
+                zq = [x for x in zqs if int(x['PeriodID']) == (i+1) and _cycle_to_number(x['Cycle Day']) == 0]
+            elif status == 0.1:
+                zq = [x for x in zqs if int(x['PeriodID']) == (i+1) and _cycle_to_number(x['Cycle Day']) == 1]
+            elif status == 0.9:
+                zq = [x for x in zqs if int(x['PeriodID']) == (i+1) and _cycle_to_number(x['Cycle Day']) == 2]
+            if len(zq) > 0:
+                if type(zq) == list:
+                    zq = zq[0]
+                class_courses.append([zq['CourseCode'], (zq['SectionID'], zq['PeriodID'], _cycle_to_number(zq['Cycle Day']), zq['Remaining Capacity'])])
+        # add assigned class courses to student_schedules dictionary
         student_schedules[studentid] = class_courses
         return [True, temp_max_sched, temp_failed_classes, class_courses]
     # checks for max schedule reached, for first iteration
@@ -277,8 +298,8 @@ def _check_schedule_r(studentid, availability, current_class, schedule_so_far, c
                 pd1cycle = pd[2][0]
                 pd2 = pd[1][1]
                 pd2cycle = pd[2][1]
-                comp[int(pd1)-1] += cycleToDouble(pd1cycle)
-                comp[int(pd2)-1] += cycleToDouble(pd2cycle)
+                comp[int(pd1)-1] += _cycle_to_double(pd1cycle)
+                comp[int(pd2)-1] += _cycle_to_double(pd2cycle)
                 if max(comp) > 1:  # if 2 b days or a or b on full period
                     comp = schedule_so_far
                 elif 0.2 in comp:  # if 2 a days
