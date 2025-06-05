@@ -45,48 +45,24 @@ Ensure that **Git** and **Python** are installed on your machine. It is recommen
    1. Installing Git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
    2. Installing Python: https://www.python.org/downloads/
 
-### How to run
+### Usage Directions
 
-1. Create Python virtual environment
+1. Clone repo, please see [Install Guide](#install-guide)
 
-```
-python3 -m venv PATH/TO/venv_name
-```
-
-2. Activate virtual environment
-
-   - Linux: `. PATH/TO/venv_name/bin/activate`
-   - Windows (PowerShell): `. .\PATH\TO\venv_name\Scripts\activate`
-
-   - Type `deactivate` at anytime in the terminal to close a virtual environment
-
-3. Navigate to project directory
-
+2. Navigate to project directory
 ```
 cd PATH/TO/Poeas__andys103_jadyl3
 ```
-4. Install dependencies (currently none)
-
-```
-pip install -r requirements.txt
-```
-5. Navigate to project app directory
-
-```
- cd PATH/TO/Poeas__andys103_jadyl3/app
-```
-
-6. Run App
-
+3. Run \_\_init\_\_.py  
 ```
  python3 __init__.py
 ```
-7. Open the link that appears in the terminal to be brought to the website
-    - You can visit the link via several methods:
-        - Control + Clicking on the link
-        - Typing/Pasting http://127.0.0.1:5000 in any browser
-    - To close the app, press control + C when in the terminal
-
-```    
-* Running on http://127.0.0.1:5000
+optionally with two elements
 ```
+ python3 __init__.py <student_request_file_name> <master_schedule_file_name>
+```
+These files should be csvs and placed into the data/ folder.  
+
+4. Allow program to run until "Program Complete." displays and the completed rosters and schedules will be written into the final.  
+
+5. Check and query rosters.csv and schedules.csv
