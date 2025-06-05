@@ -63,6 +63,6 @@ optionally with two elements
 ```
 These files should be csvs and placed into the data/ folder.  
 
-4. Allow program to run until "Program Complete." displays and the completed rosters and schedules will be written into the final.  
+4. Allow program to run until "Program Complete." displays and the completed rosters and schedules will be written into the final. No other methods should show up in the terminal.  
 
 5. Check and query rosters.csv and schedules.csv

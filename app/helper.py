@@ -5,7 +5,7 @@ import random # used to find random students when unscheduling
 
 # constants used by functions only in this module
 NUM_OF_REQUESTED_CLASSES = 15 #student_requests have courses from Course1 to Course15
-RESET_NUM = 50
+RESET_NUM = 15
 special_doubles = ["SBS22H", "SBS44QLA", "SBS44QLB", "SCS22H",
                    "SCS22QLA", "SCS22QLB", "SPS22H", "SPS22QLA", "SPS22QLB"]
 
@@ -235,9 +235,11 @@ input: (student_request -> Dictionary {StudentID: String, Course1: String, ...},
 output: _check_schedule_r
 '''
 def _check_schedule(studentid, availability):
+    global temp_max_sched
+    global temp_failed_classes
     temp_max_sched = 0
     temp_failed_classes = []
-    return _check_schedule_r(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [], temp_max_sched, temp_failed_classes)
+    return _check_schedule_r(studentid, availability, 0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [])
 
 ''' recursive function _check_schedule_r
 input: (student_request -> Dictionary {StudentID: String, Course1: String, ...},
@@ -250,11 +252,12 @@ input: (student_request -> Dictionary {StudentID: String, Course1: String, ...},
         )
 output: [True/False, temp_max_sched, temp_failed_classes, class_courses]
 '''
-def _check_schedule_r(studentid, availability, current_class, schedule_so_far, class_courses, temp_max_sched, temp_failed_classes):
+def _check_schedule_r(studentid, availability, current_class, schedule_so_far, class_courses):
+    global temp_max_sched
+    global temp_failed_classes
     # end of recursive cycle, passes scheduling
     if current_class >= len(availability):
         pd = class_courses[-1]
-        global student_schedules
         student_schedules[studentid] = class_courses
         return [True, temp_max_sched, temp_failed_classes, class_courses]
     # checks for max schedule reached, for first iteration
@@ -290,7 +293,7 @@ def _check_schedule_r(studentid, availability, current_class, schedule_so_far, c
                 else:
                     class_courses_copy = class_courses.copy()
                     class_courses_copy.append([availability[current_class][0], pd])
-                    result = _check_schedule_r(studentid, availability, current_class+1, comp, class_courses_copy, temp_max_sched, temp_failed_classes)
+                    result = _check_schedule_r(studentid, availability, current_class+1, comp, class_courses_copy)
 
             else:  # non double case
                 if comp[int(pd[1])-1] == 0.0:
@@ -311,7 +314,7 @@ def _check_schedule_r(studentid, availability, current_class, schedule_so_far, c
                 else:
                     class_courses_copy = class_courses.copy()
                     class_courses_copy.append([availability[current_class][0], pd])
-                    result = _check_schedule_r(studentid, availability, current_class+1, comp, class_courses_copy, temp_max_sched, temp_failed_classes)
+                    result = _check_schedule_r(studentid, availability, current_class+1, comp, class_courses_copy)
             if result != None and result[0]:
                 return result
     else:
@@ -378,26 +381,24 @@ def _create_schedules_r(student_requests):
                 counter = RESET_NUM + 2
                 break
             random_student = random.randint(0, len(test_students) - 1) # get random student request to unschedule
-            # while test_students[random_student] in problem_children: # make sure not to reschedule a schedule known to cause problems
-            #     # print("problem child located")
-            #     test_students.pop(random_student)
-            #     if (len(test_students) <= 1):
-            #         counter = RESET_NUM + 2
-            #         break
-            #     random_student = random.randint(0, len(test_students) - 1)
+            while test_students[random_student] in problem_children: # make sure not to reschedule a schedule known to cause problems
+                test_students.pop(random_student)
+                if (len(test_students) <= 1):
+                    counter = RESET_NUM + 2
+                    break
+                random_student = random.randint(0, len(test_students) - 1)
             _update_class_list(test_students[random_student], student_schedules[test_students[random_student]], 1) # officialize unschedule by editing class list
             failed_students.append(student_requests_dictionary[test_students[random_student]]) # append unscheduled request to list to reschedule
             twoArr = _create_schedule(student) # retry problematic request
             counter += 1
         if counter >= RESET_NUM and not twoArr[0]: # reset case if a request had more than RESET_NUM requests be unscheduled and still isn't scheduled
-            print("restart")
             # global problem_children
             problem_children.append(student["StudentID"]) # add unscheduled request's osis to super problematic request list 
             global last_reset
             restart = last_reset.copy()  
             restart.remove(student)
             restart.insert(0, student) # put problematic request at front with the rest of them. 
-            last_reset = restart.copy()
+            last_reset = restart
             for id in student_schedules: # empty student_schedules
                 if student_schedules[id]:
                     _update_class_list(id, student_schedules[id], 1)
@@ -411,7 +412,6 @@ def _create_schedules_r(student_requests):
         # in case of (near)impossible request lists, the dictionaries are written to files when a minimum number of failed students is reached 
         if len(failed_students) < minimum:
             minimum = len(failed_students)
-            print("wrote to files", minimum)
             with open(os.path.normpath("temp/schedules.txt"), "w") as f:
                 f.write(str(student_schedules))
             with open(os.path.normpath("temp/classes.txt"), "w") as f:
