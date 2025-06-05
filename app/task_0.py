@@ -337,14 +337,36 @@ def formatList(osis):
     return (studentC)
 
 # prints a 2d array of each student with schedules, or blank without schedules. courses are CourseID-SectionID. fulfills task 2
-
-
-def formatListTotal():
-    studentsTotal = [["OSIS", "FIRSTNAME", "LASTNAME", "OFFICIALCLASS", "VALID", "PERIOD1", "PERIOD2",
-                      "PERIOD2", "PERIOD3", "PERIOD4", "PERIOD5", "PERIOD6", "PERIOD7", "PERIOD8", "PERIOD9", "PERIOD10"]]
-    for student in student_requests:
-        studentC = formatList(student['StudentID'])
-        studentsTotal.append(studentC)
+def format_schedules(student_schedules):
+    studentsTotal = []
+    studentHeader = ["LastName","FirstName","StudentId","CounselorName","ofcl","0","1","2","3","4","5","6","7","8","9","10","11","12","13","14"]
+    studentsTotal.append(studentHeader)
+    for student in student_schedules.keys():
+        str1 = [""] * 20
+        for req in student_requests: 
+            if req["StudentID"] == student:
+                str1[0] = req['LastName']
+                str1[1] = req['FirstName']
+                str1[2] = student
+                str1[3] = ""
+                str1[4] = req['OffClass']
+                break
+        for course in student_schedules[student]:
+            if type(course[1][1]) == tuple:
+                for val in course[1][1]:
+                    if str1[int(val) + 5] == "":
+                        str1[int(val) + 5] = f"{course[0]}-{course[1][0]}"
+                    elif str1[int(val) + 5] == str:
+                        str1[int(val) + 5] += f"/{course[0]}-{course[1][0]}"
+            else:
+                if str1[int(course[1][1]) + 5] == "":
+                    str1[int(course[1][1]) + 5] = f"{course[0]}-{course[1][0]}"
+                elif str1[int(course[1][1]) + 5] == str:
+                    str1[int(course[1][1]) + 5] += f"/{course[0]}-{course[1][0]}"
+        print(str1)
+        studentsTotal.append(str1)
+    print(studentsTotal)
+    formatListTotal(studentsTotal)
     return (studentsTotal)
 
 # print(formatListTotal())
@@ -416,7 +438,9 @@ def formatListTotalClass(studentArr):
         formatListTotalClass(failed_students)
     return(classArr)
 
-# puts each response into a
+# results and formats into task 1.
+# keep in mind that for some classes, like ap biology, we have 2 classes per person scheduled for one class
+# and section, because they are two different items in the master schedule but same section and class
 def addClassArr(student, twoArr):
     if len(twoArr) == 0:
         return ("No items in 2D array")
@@ -430,8 +454,8 @@ def addClassArr(student, twoArr):
                     strList.append(student['SchoolYear'])
                     strList.append(student['OffClass'])
                     i = special_doubles.index(a[0])
-                    strList.append(special_doubles[i + a[1][2][j]] + "-" + a[1][0])
-                    strList.append(a[1][1][j])
+                    strList.append(special_doubles[i + a[1][2][j]])
+                    strList.append(a[1][0])
                     str = ",".join(strList)
                     classArr.append(str)
             elif type(a[1][2]) == tuple:
@@ -441,8 +465,8 @@ def addClassArr(student, twoArr):
                     strList.append(student['FirstName'])
                     strList.append(student['SchoolYear'])
                     strList.append(student['OffClass'])
-                    strList.append(a[0] + "-" + a[1][0])
-                    strList.append(a[1][1][j])
+                    strList.append(a[0])
+                    strList.append(a[1][0])
                     str = ",".join(strList)
                     classArr.append(str)
             else:
@@ -451,8 +475,8 @@ def addClassArr(student, twoArr):
                 strList.append(student['FirstName'])
                 strList.append(student['SchoolYear'])
                 strList.append(student['OffClass'])
-                strList.append(a[0] + "-" + a[1][0])
-                strList.append(a[1][1])
+                strList.append(a[0])
+                strList.append(a[1][0])
                 str = ",".join(strList)
                 classArr.append(str)
 
@@ -479,16 +503,7 @@ def listAllClass(course):
             for student in dictClass['students']:
                 if student not in studentsC:
                     studentsC.append(student)
-    # for student in studentsC:
-    #     students.append(student_requests_dictionary[student])
     return(studentsC)
-
-formatListTotalClass(student_requests)
-for i in student_schedules:
-    if not student_schedules[i]:
-        print(i, student_schedules[i])
-    else:
-        print(i)
 
 def stdDevs():
     arr = class_list
@@ -524,7 +539,72 @@ def stdDev(arr):
         stDev += ((classArr - mean) ** 2)
     return(math.sqrt(stDev / (len(arr) - 1)))
 
-print(stdDevs())
+def student_sections(student_schedules):
+    studentsTotal = []
+    studentHeader = ['Student ID','Last Name','First Name','Year','Official Class','Course,Section']
+    studentsTotal.append(studentHeader)
+    for student in student_schedules.keys():
+        for course in student_schedules[student]:
+            str1 = [""] * 7
+            for req in student_requests: 
+                if req["StudentID"] == student:
+                    str1[0] = student
+                    str1[1] = req['LastName']
+                    str1[2] = req['FirstName']
+                    str1[3] = req['SchoolYear']
+                    str1[4] = req['OffClass']
+                    str1[5] = course[0]
+                    str1[6] = course[1][0]
+                    break
+            print(str1)
+            studentsTotal.append(str1)
+    print(studentsTotal)
+    formatSeatsClass(studentsTotal)
+    return (studentsTotal)
+
+def formatSeatsClass(courseArr):
+    with open('sections.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for course in courseArr:
+            writer.writerow(course)
+
+def formatListTotal(studentArr):
+    with open('schedules.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for student in studentArr:
+            writer.writerow(student)
+
+def format_classes(class_list):
+    fullArr = []
+    header = list(class_list[0].keys())
+    fullArr.append(header)
+    for arr in class_list:
+        print(arr)
+        partArr = list(arr.values())
+        fullArr.append(partArr)
+    formatRoster(fullArr)
+    return(fullArr)
+
+def formatRoster(class_list):
+    with open('rosters.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for arr in class_list:
+            writer.writerow(arr)
+
+formatListTotalClass(student_requests)
+classArr.sort(key=lambda x: int(x.split(',')[0]))
+student_schedules = dict(sorted(student_schedules.copy().items(), key=lambda item: int(item[0])))
+for i in student_schedules:
+    if not student_schedules[i]:
+        print(i, student_schedules[i])
+    else:
+        print(i)
+
+student_sections(student_schedules)
+format_schedules(student_schedules)
+format_classes(class_list)
+
+# print(stdDevs())
 with open("schedules.txt", "w") as f:
     f.write(str(student_schedules))
 with open("classes.txt", "w") as f:
