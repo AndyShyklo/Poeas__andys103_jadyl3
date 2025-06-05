@@ -141,5 +141,14 @@ jadyL -- 2025-05-30 12:01
 andyS -- 2025-06-01 23:11
   - added standard deviation for class seating list
 
+jadyL -- 2025-06-04 15:07
+  - ignore zq's specifically
+
+jadyL -- 2025-06-04 23:58
+  - rewrite code with documentation in documentation branch
+
+jadyL -- 2025-06-05 01:21
+  - add zqs back into schedules and honor sports team and leadership requests
+
 TODO:
   - get changeClassList to increment doubles (not a priority)
