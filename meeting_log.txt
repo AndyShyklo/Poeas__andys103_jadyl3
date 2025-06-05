@@ -28,3 +28,35 @@ Meeting 4: May 1, 2025: Mr. Dillon Period 8, Andy
 Meeting 5: May 1, 2025: Mr. Dillon Period 9, Jady
 Mr Dillon explained to me how doubles work. It is a headache, and we do need to figure it out.
 There are multiple algorithms we should probably at least mimic. This means we likely will not even touch GAS.
+
+Meeting 6: May 7, 2025: Mr. Dillon Period 8, Andy
+  - Current program components make sense
+  - Attempt to schedule for everyone using new requests file
+  - After, schedule by availability per class
+  - Create failed students
+  - May need to use 2D recursion
+
+Meeting 7: May 16, 2025: Mr. Dillon Period 8 (and email), Andy
+  - We can use a decimal implementation for A and B days
+  - Ignore invalid cycle courses
+  - Due Date set
+
+Meeting 8: May 22, 2025: Mr. Dillon Period 8, Andy
+  - Fix exceptions like double periods properly scheduling
+  - Prioritize unscheduling easier schedules in favor of more difficult schedules
+  - Value classes by priority (somewhat done already through availability)
+
+Meeting 9: May 27, 2025: Mr. Dillon Period 7, Jady
+  - Elective Rankings can be used instead of unscheduling, if a dead-end is near
+  - Currently prioritize unscheduling, but decide when to restart for a student and take their next choice
+  - Problem students should generally be given priority
+
+Meeting 10: June 3, 2025: Mr Dillon Period 5, Andy and Jady
+  - Code mostly meets how it should be run and returned
+  - Obvious issue remains on reaching the end of the student requests
+  - Need more documentation
+
+Meeting 11: June 4, 2025, Mr. Dillon Period 7, Jady
+  - Turns out we don't need to honor the free schedules
+  - Free periods were written after scheduling, meaning our chance of a correct schedule is 1/3200! (thats a factorial)
+  - Screen recording of code to be sent

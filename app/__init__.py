@@ -12,6 +12,7 @@ CLASSES_FILE = os.path.normpath("data/MasterSchedule.csv")
 # output file paths for unix/windows
 SCHEDULES_OUTPUT_FILE = os.path.normpath("final/schedules.csv")
 ROSTER_OUTPUT_FILE = os.path.normpath("final/rosters.csv")
+SEATS_OUTPUT_FILE = os.path.normpath("final/seats.csv")
 
 # command line inputs
 if len(sys.argv) == 2:
@@ -33,18 +34,30 @@ def main():
     student_request_dictionary = student_requests[1]
 
     result = create_schedules(student_request_list, class_list, student_request_dictionary)
-    formatted_schedules = format_schedules(result[0])
+    
+    formatted_schedules = format_schedules(result[0], student_request_list)
     formatted_class_roster = format_classes(result[1])
-    return(formatted_schedules, formatted_class_roster)
+    formatted_seats = format_seats(result[0], student_request_list)
+    return(formatted_schedules, formatted_class_roster, formatted_seats)
 
 # run function
 result = main()
 
 # Generated schedules and class rosters are written to files.
-with open(SCHEDULES_OUTPUT_FILE, "w") as f:
-    f.write(result[0])
-with open(ROSTER_OUTPUT_FILE, "w") as f:
-    f.write(result[1])
+# Fulfills task 2 of formatting
+with open(SCHEDULES_OUTPUT_FILE, 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    for arr in result[0]:
+        writer.writerow(arr)
+with open(ROSTER_OUTPUT_FILE, 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    for arr in result[1]:
+        writer.writerow(arr)
+# Fulfills task 1 of formatting
+with open(SEATS_OUTPUT_FILE, 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    for arr in result[2]:
+        writer.writerow(arr)
 
 # Notify user of program completion
 print("Program Complete.")

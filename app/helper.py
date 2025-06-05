@@ -372,7 +372,10 @@ def create_schedules(student_requests, class_list_in, student_requests_dictionar
     last_reset = student_requests.copy()
     global student_requests_dictionary
     student_requests_dictionary = student_requests_dictionary_in
-    return _create_schedules_r(student_requests)
+    resultTemp = _create_schedules_r(student_requests)
+    result = list(resultTemp)
+    result[0] = dict(sorted(result[0].copy().items(), key=lambda item: int(item[0])))
+    return(result)
 
 ''' function to sort requests based on difficulty to schedule.
 input: student_requests -> List of Dictionaries [{StudentID: String, Course1: String, ...}, {...}]
