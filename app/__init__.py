@@ -21,7 +21,7 @@ if len(sys.argv) == 2:
 
 '''main function
 input: No args
-output: (csvTextOfSchedules -> String, csvTextOfRoster -> String)
+output: (csvTextOfSchedules -> String, csvTextOfRoster -> String, csvTextOfSeats -> String)
 '''
 def main():
     # using internal functions from module to parse csv files
