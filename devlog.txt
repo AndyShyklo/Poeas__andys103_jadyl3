@@ -117,16 +117,6 @@ jadyL -- 2025-05-20 11:46
 jadyL -- 2025-05-20 11:46
   - list of osis numbers added to class list
 
-To-do/Remaining Logic as of 2025-05-23 13:29
-  - classes are only added to someone's availability if they have seats
-  - this means later scheduled people have less class options and their period scheduling might no longer work, so it fails
-  - return the class that failed and all the remaining free periods of that student in that moment, and check for all classes for that course where a student has a free at that state.
-  - unschedule something like 25% of all students in each of those classes, and re-add them to the end of student requests so that they still get referenced, just later on. 
-  - if this doesn't work, try adding this student to the top of the a new student schedules list so they get priority, and start rescheduling from scratch (may be a better way to do this)
-  - proceed with rescheduling that same student that failed earlier, which in this case should probably have a working period, and continue the cycle. 
-  - if this happens again but for a different class, continue the cycle, and push other students back until it works.
-  - if it doesn't work at all, redo whole schedules with that student as priority 
-
 andyS -- 2025-05-27 11:48
   - added functionality to recognize failed students with failed students
   - max schedule reached and max failed class
@@ -168,3 +158,10 @@ andyS -- 2025-06-05 16:01
   - added formatting functions to updated documentation
   - created roster formatting function
   - updated logs
+
+Changes to devlog:
+ - update flowchart with specifics of new code.
+ - update role descriptions
+ - update modules
+ - update functions
+ - update ship date

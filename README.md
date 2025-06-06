@@ -5,11 +5,14 @@ Andy: (PM)
 - Coding to specification of Mr. Dillon
 - Modifying existing code to accommodate for schedule inflexibility
 - Debugging and special cases
+- Formatting code output and writing to csv files
 
 Jady:
 - Coding to specification of Mr. Dillon
-- Creating schedule creation and recursive functions
-- Manage overall data structure
+- Documentation on the code
+- Write in doubles
+- Optimizing availability and scheduling/unscheduling
+
 
 
 ## Description
