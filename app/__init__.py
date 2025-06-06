@@ -6,6 +6,7 @@ from helper import *
 from formatter import *
 
 # default files for unix/windows
+# STUDENT_REQUEST_FILE = os.path.normpath("data/StudentRequest-Sample2-1600.csv")
 STUDENT_REQUEST_FILE = os.path.normpath("data/StudentRequest-Sample2.csv")
 CLASSES_FILE = os.path.normpath("data/MasterSchedule.csv")
 
@@ -15,9 +16,9 @@ ROSTER_OUTPUT_FILE = os.path.normpath("final/rosters.csv")
 SEATS_OUTPUT_FILE = os.path.normpath("final/seats.csv")
 
 # command line inputs
-if len(sys.argv) == 2:
-    STUDENT_REQUEST_FILE = os.path.normpath(f"data/{sys.argv[0]}")
-    CLASSES_FILE = os.path.normpath(f"data/{sys.argv[1]}")
+if len(sys.argv) == 3:
+    STUDENT_REQUEST_FILE = os.path.normpath(f"data/{sys.argv[1]}")
+    CLASSES_FILE = os.path.normpath(f"data/{sys.argv[2]}")
 
 '''main function
 input: No args
@@ -45,15 +46,18 @@ result = main()
 
 # Generated schedules and class rosters are written to files.
 # Fulfills task 2 of formatting
+print("Writing to final/schedules.csv")
 with open(SCHEDULES_OUTPUT_FILE, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     for arr in result[0]:
         writer.writerow(arr)
+print("Writing to final/rosters.csv")
 with open(ROSTER_OUTPUT_FILE, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     for arr in result[1]:
         writer.writerow(arr)
 # Fulfills task 1 of formatting
+print("Writing to final/seats.csv")
 with open(SEATS_OUTPUT_FILE, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     for arr in result[2]:

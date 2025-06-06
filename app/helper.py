@@ -201,7 +201,8 @@ def _return_list_of_availability(student_request, course_info):
         # ignore ZQs, lab courses, and the broken courses
         if classcode and (classcode not in half_zqs) and classcode not in ["SBS44QLA", "SBS44QLB", "SCS22QLA", "SCS22QLB", "SPS22QLA", "SPS22QLB", "EES88", "FFS62", "SCS22"]:
             if len(availablePds) == 0:
-                print("EMPTY SECTION ", classcode)
+                print("FULL SECTION ", classcode)
+                print("STUDENT", student_request['StudentID'])
             availablePds.insert(0, classcode)
             availability.append(availablePds)
     availability.sort(key=len)
@@ -418,6 +419,7 @@ def _create_schedules_r(student_requests):
             for course in class_list: # empty class_list
                 if course['students']:
                     course['students'] = []
+            print("restart")
             return _create_schedules_r(restart)
         # update student_schedules since check_schedule came back correctly
     # recursive case
@@ -430,10 +432,13 @@ def _create_schedules_r(student_requests):
             with open(os.path.normpath("temp/classes.txt"), "w") as f:
                 f.write(str(class_list))
         # recursive call to reschedule unscheduled requests 
+        print("Scheduling failed for", len(failed_students), "students")
         _create_schedules_r(failed_students)
     # recursion complete and schedules and rosters have been generated
+    print("Writing to temp/schedules.txt")
     with open(os.path.normpath("temp/schedules.txt"), "w") as f:
         f.write(str(student_schedules))
+    print("Writing to temp/classes.txt")
     with open(os.path.normpath("temp/classes.txt"), "w") as f:
         f.write(str(class_list))
     return(student_schedules, class_list)
