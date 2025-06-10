@@ -16,6 +16,7 @@ half_zqs = ["ZQ01", "ZQ02", "ZQ03", "ZQ04", "ZQ05", "ZQ06", "ZQ07", "ZQ08", "ZQ0
 # essentially global variables
 student_schedules = {}
 student_requests_dictionary = {}
+student_request_full_data = {}
 class_list = {}
 #for _check_schedule
 temp_max_sched = 0
@@ -36,10 +37,21 @@ def get_student_requests(filename):
     with open(filename, newline='') as csvfile:
         document = csv.DictReader(csvfile)
         for row in document:
+            for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
+                classcode = row["Course"+str(i)]
+                if "(" in classcode:
+                    classcode = classcode[1:-1]
+                    classcode = classcode.split(" ")
+                    row["Course"+str(i)] = classcode
+            student_request_full_data[row['StudentID']] = row.copy()
+            for i in range(1, NUM_OF_REQUESTED_CLASSES + 1):
+                classcode = row["Course"+str(i)]
+                if type(classcode) == list:
+                    row["Course"+str(i)] = classcode[0]
             row['difficulty'] = 0 
             student_requests.append(row)
             student_requests_dictionary[row['StudentID']] = row
-    return(student_requests, student_requests_dictionary)
+    return(student_requests, student_requests_dictionary, student_request_full_data)
 
 ''' parse master schedule
 input: filename -> String
@@ -365,13 +377,15 @@ input: (student_requests -> List of Dictionaries [{StudentID: String, Course1: S
         student_requests_dictionary -> Dictionary {'1': [{StudentID: String, Course1: String, ...}], ...})
 output: _create_schedules_r
 '''
-def create_schedules(student_requests, class_list_in, student_requests_dictionary_in):
+def create_schedules(student_requests, class_list_in, student_requests_dictionary_in, student_request_full_data_in):
     global class_list
     class_list = class_list_in
     global last_reset
     last_reset = student_requests.copy()
     global student_requests_dictionary
     student_requests_dictionary = student_requests_dictionary_in
+    global student_request_full_data
+    student_request_full_data = student_request_full_data_in
     resultTemp = _create_schedules_r(student_requests)
     result = list(resultTemp)
     result[0] = dict(sorted(result[0].copy().items(), key=lambda item: int(item[0])))

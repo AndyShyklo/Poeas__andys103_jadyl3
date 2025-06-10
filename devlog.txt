@@ -159,6 +159,9 @@ andyS -- 2025-06-05 16:01
   - created roster formatting function
   - updated logs
 
+jadyL -- 2025-06-09 20:33
+  - accept class choices as (code1 code2 code3)
+
 Changes to devlog:
  - update flowchart with specifics of new code.
  - update role descriptions
